@@ -19,7 +19,7 @@
         <a style="display:block;" href="index.php?r=user/myLists">My Lists</a>
         <a style="display:block;" href="index.php?r=user/mySettings">My Settings</a>
     </div>
-    My Friends
+    My Friendss
     <?php $this->widget('FriendsOverview',array('idUser'=>$user->idUser)); ?>
 </div>
 <div style="border:1px black solid; width:750px; display:inline-block;">
