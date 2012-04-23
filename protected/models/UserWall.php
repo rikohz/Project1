@@ -1,21 +1,25 @@
 <?php
 
 /**
- * This is the model class for table "userWall".
+ * This is the model class for table "userwall".
  *
- * The followings are the available columns in table 'userWall':
+ * The followings are the available columns in table 'userwall':
  * @property integer $idUserWall
  * @property integer $idUserFrom
  * @property integer $idUserTo
  * @property string $content
  * @property string $createDate
+ *
+ * The followings are the available model relations:
+ * @property User $idUserTo0
+ * @property User $idUserFrom0
  */
-class UserWall extends CActiveRecord
+class Userwall extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
-	 * @return UserWall the static model class
+	 * @return Userwall the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -27,7 +31,7 @@ class UserWall extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return 'userWall';
+		return 'userwall';
 	}
 
 	/**
@@ -54,6 +58,8 @@ class UserWall extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
+			'userTo' => array(self::BELONGS_TO, 'User', 'idUserTo'),
+			'userFrom' => array(self::BELONGS_TO, 'User', 'idUserFrom'),
 		);
 	}
 

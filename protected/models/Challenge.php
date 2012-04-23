@@ -10,14 +10,17 @@
  * @property integer $idTruth
  * @property integer $idDare
  * @property integer $success
+ * @property integer $voteUp
+ * @property integer $voteDown
  * @property integer $private
+ * @property string $picturePath
  * @property string $createDate
  *
  * The followings are the available model relations:
- * @property Dare $idDare0
  * @property User $idUserFrom0
  * @property User $idUserTo0
  * @property Truth $idTruth0
+ * @property Dare $idDare0
  */
 class Challenge extends CActiveRecord
 {
@@ -48,10 +51,11 @@ class Challenge extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('idUserFrom, idUserTo, private, createDate', 'required'),
-			array('idUserFrom, idUserTo, idTruth, idDare, success, private', 'numerical', 'integerOnly'=>true),
+			array('idUserFrom, idUserTo, idTruth, idDare, success, voteUp, voteDown, private', 'numerical', 'integerOnly'=>true),
+			array('picturePath', 'length', 'max'=>255),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('idChallenge, idUserFrom, idUserTo, idTruth, idDare, success, private, createDate', 'safe', 'on'=>'search'),
+			array('idChallenge, idUserFrom, idUserTo, idTruth, idDare, success, voteUp, voteDown, private, picturePath, createDate', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -63,10 +67,10 @@ class Challenge extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'idDare0' => array(self::BELONGS_TO, 'Dare', 'idDare'),
-			'idUserFrom0' => array(self::BELONGS_TO, 'User', 'idUserFrom'),
-			'idUserTo0' => array(self::BELONGS_TO, 'User', 'idUserTo'),
-			'idTruth0' => array(self::BELONGS_TO, 'Truth', 'idTruth'),
+			'userFrom' => array(self::BELONGS_TO, 'User', 'idUserFrom'),
+			'userTo' => array(self::BELONGS_TO, 'User', 'idUserTo'),
+			'truth' => array(self::BELONGS_TO, 'Truth', 'idTruth'),
+			'dare' => array(self::BELONGS_TO, 'Dare', 'idDare'),
 		);
 	}
 
@@ -82,7 +86,10 @@ class Challenge extends CActiveRecord
 			'idTruth' => 'Id Truth',
 			'idDare' => 'Id Dare',
 			'success' => 'Success',
+			'voteUp' => 'Vote Up',
+			'voteDown' => 'Vote Down',
 			'private' => 'Private',
+			'picturePath' => 'Picture Path',
 			'createDate' => 'Create Date',
 		);
 	}
@@ -104,7 +111,10 @@ class Challenge extends CActiveRecord
 		$criteria->compare('idTruth',$this->idTruth);
 		$criteria->compare('idDare',$this->idDare);
 		$criteria->compare('success',$this->success);
+		$criteria->compare('voteUp',$this->voteUp);
+		$criteria->compare('voteDown',$this->voteDown);
 		$criteria->compare('private',$this->private);
+		$criteria->compare('picturePath',$this->picturePath,true);
 		$criteria->compare('createDate',$this->createDate,true);
 
 		return new CActiveDataProvider($this, array(

@@ -19,7 +19,7 @@
         <a style="display:block;" href="index.php?r=user/myLists">My Lists</a>
         <a style="display:block;" href="index.php?r=user/mySettings">My Settings</a>
     </div>
-    My Friendss
+    My Friends
     <?php $this->widget('FriendsOverview',array('idUser'=>$user->idUser)); ?>
 </div>
 <div style="border:1px black solid; width:750px; display:inline-block;">
@@ -38,7 +38,7 @@
         <div style="height:150px; width:494px; border:1px black solid; float:right;">
             <div style="float:right; width:450px; height:73px; border:1px black solid;">
                 <div style="float:right; width:120px; height:71px; border:1px black solid; font-weight:bold; text-align:center;">
-                    <p style="line-height:71px; vertical-align:middle;">Total: ???pts</p>
+                    <p style="line-height:71px; vertical-align:middle;">Total: <?php echo $scoreTruth['scoreTotal']; ?>pts</p>
                 </div>
                 <div style="float:right; width:120px; height:71px; border:1px black solid;">
                     <div style="margin: 10px 0 0 8px;">
@@ -51,7 +51,7 @@
             </div>
             <div style="float:right; width:450px; height:73px; border:1px black solid;">
                 <div style="float:right; width:120px; height:71px; border:1px black solid; font-weight:bold; text-align:center;">
-                    <p style="line-height:71px; vertical-align:middle;">Total: ???pts</p>
+                    <p style="line-height:71px; vertical-align:middle;">Total: <?php echo $scoreDare['scoreTotal']; ?>pts</p>
                 </div>
                 <div style="float:right; width:120px; height:71px; border:1px black solid;">
                     <div style="margin: 10px 0 0 8px;">
@@ -65,26 +65,21 @@
         </div>
     </div>
     <div style="border:1px black solid;">
-        <p>
-            <u>Total</u><br />
-            Week score: <?php echo $scoreTruth['scoreWeek'] + $scoreDare['scoreWeek']; ?> pts<br />
-            Month score: <?php echo $scoreTruth['scoreMonth'] + $scoreDare['scoreMonth']; ?> pts<br />
-            Year score: <?php echo $scoreTruth['scoreYear'] + $scoreDare['scoreYear']; ?> pts<br />
-            Total score: <?php echo $scoreTruth['scoreTotal'] + $scoreDare['scoreTotal']; ?> pts
-        </p>
-        <p>
-            <u>Truth</u><br />
-            Week score: <?php echo $scoreTruth['scoreWeek'];; ?> pts<br />
-            Month score: <?php echo $scoreTruth['scoreMonth']; ?> pts<br />
-            Year score: <?php echo $scoreTruth['scoreYear']; ?> pts<br />
-            Total score: <?php echo $scoreTruth['scoreTotal']; ?> pts
-        </p>
-        <p>
-            <u>Dare</u><br />
-            Week score: <?php echo $scoreDare['scoreWeek']; ?> pts<br />
-            Month score: <?php echo $scoreDare['scoreMonth']; ?> pts<br />
-            Year score: <?php echo $scoreDare['scoreYear']; ?> pts<br />
-            Total score: <?php echo $scoreDare['scoreTotal']; ?> pts
-        </p>
+        <div class="form">
+            <?php $form = $this->beginWidget('CActiveForm', array('id'=>'wall-form')); ?>
+                <div class="row"><?php echo $form->textArea($model,'content'); ?></div>
+                <div class="row buttons"><?php echo CHtml::submitButton('Submit'); ?></div>
+            <?php $this->endWidget(); ?>
+        </div>
+    </div>
+    <div style="border:1px black solid;">
+        <?php foreach($wall as $row): ?>
+            <img src="userImages/profilePicture_mini/<?php echo $row['picture'] . '_mini' . $row['pictureExtension']; ?>" />
+            <p><?php echo $row['createDate']; ?></p>
+            <p><?php echo $row['content']; ?></p>
+        <?php endforeach; ?>
+            
+        <p>ARGH ORDE DATE A REVOIRs</p>
+        <p>See yiinfinite-scroll</p>
     </div>
 </div>

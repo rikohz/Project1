@@ -359,21 +359,32 @@ class User extends CActiveRecord
             {       
                 //Delete old Profile Picture
                 if($oldProfilePictureName !== "default" )
-                    if(is_file($_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/" . $oldProfilePictureName . $oldPictureProfileExtension))
-                        if(is_file($_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/profilePicture_mini/" . $oldProfilePictureName . '_mini' . $oldPictureProfileExtension))
-                        {
-                            unlink($_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/profilePicture/" . $oldProfilePictureName . '_profile' . $oldPictureProfileExtension);
-                            unlink($_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/profilePicture_mini/" . $oldProfilePictureName . '_mini' . $oldPictureProfileExtension);
-                            unlink($_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/profilePicture_original/" . $oldProfilePictureName . '_original' . $oldPictureProfileExtension);
-                        }
-                //Upload new Profile Picture
+                {
+                    if(is_file($_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/profilePicture/" . $oldProfilePictureName . '_profile' . $oldPictureProfileExtension))
+                        unlink($_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/profilePicture/" . $oldProfilePictureName . '_profile' . $oldPictureProfileExtension);                          
+                    if(is_file($_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/profilePicture_mini/" . $oldProfilePictureName . '_mini' . $oldPictureProfileExtension))
+                        unlink($_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/profilePicture_mini/" . $oldProfilePictureName . '_mini' . $oldPictureProfileExtension);                       
+                    if(is_file($_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/profilePicture_original/" . $oldProfilePictureName . '_original' . $oldPictureProfileExtension))
+                        unlink($_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/profilePicture_original/" . $oldProfilePictureName . '_original' . $oldPictureProfileExtension);    
+                }        
+                
+                //We keep 3 pictures, _original _profile _mini
+                //Original Picture
                 if (rename($fromFile,$toFileOriginal))
                 {
+                    //Profile Picture (max width:150px)
                     $image = Yii::app()->image->load($toFileOriginal);
                     $image->resize(150, 150, Image::WIDTH);
                     $image->save($toFileProfile);
-                    $image->resize(64, 64);
+                    
+                    //Thumbnail
+                    if($image->__get('width') > $image->__get('height'))
+                        $image->resize(50, 50, Image::HEIGHT);
+                    else
+                        $image->resize(50, 50, Image::WIDTH);
+                    $image->crop(50, 50);
                     $image->save($toFileMini);
+                    
                     $result = true;               
                 }
                 else

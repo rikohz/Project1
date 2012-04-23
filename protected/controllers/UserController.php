@@ -71,11 +71,63 @@ class UserController extends MyController
 
 	public function actionMyPage()
 	{
+            //User Score
             $user = User::model()->with('province','city','district')->findByPk(Yii::app()->user->getId());
             $scoreTruth = $user->getScore('truth');
             $scoreDare = $user->getScore('dare');
             
-            $this->render('myPage',array('user'=>$user,'scoreTruth'=>$scoreTruth,'scoreDare'=>$scoreDare));
+            //Add message to the Wall
+            $model = new UserWall;
+            if(isset($_POST['UserWall']))
+            {
+                $model->attributes = $_POST['UserWall'];
+                $model->idUserFrom = Yii::app()->user->getId();
+                $model->idUserTo = Yii::app()->user->getId();
+                $model->createDate = date('Y-m-d, H:i:s');
+                $model->save();
+                $model->content='';
+            }
+            
+            //Display Wall
+            $criteria = new CDbCriteria;
+            $criteria->condition = 'idUserTo = :idUser';
+            $criteria->params = array(':idUser'=>Yii::app()->user->getId());
+            $criteria->order = 'createDate DESC';
+            $wallComments = userWall::model()->with('userFrom')->findAll($criteria);
+            
+            $wall = array(); $i = 0;
+            foreach($wallComments as $row)
+            {
+                $wall[$i]['content'] = $row->content;
+                $wall[$i]['createDate'] = $row->createDate;
+                $wall[$i]['picture'] = $row->userFrom->profilePicture;
+                $wall[$i]['pictureExtension'] = $row->userFrom->profilePictureExtension;
+                $i++;   
+            }
+            
+            //Display Challenges
+            $criteria->condition = 'success = :success';
+            $criteria->params = array('success'=>1);
+            $challenges = Challenge::model()->with('truth','dare')->findAll($criteria);
+            foreach($challenges as $row)
+            {
+                $wall[$i]['content'] = isset($row->truth) ? $row->truth->truth : $row->dare->dare;
+                $wall[$i]['createDate'] = $row->createDate;
+                $wall[$i]['picture'] = $user->profilePicture;
+                $wall[$i]['pictureExtension'] = $user->profilePictureExtension;
+                $i++;   
+            }
+            
+            // IdActivite croissants
+             function cmp($a,$b)
+             {
+                 return $b['createDate']-$a['createDate'];
+             }
+             usort($wall,"cmp");
+            
+            
+            
+            $this->render('myPage',array('model'=>$model,'wall'=>$wall,'user'=>$user,'scoreTruth'=>$scoreTruth,'scoreDare'=>$scoreDare));
 	}
         
 	public function actionRegister()
