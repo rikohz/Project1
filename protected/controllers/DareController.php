@@ -2,22 +2,10 @@
 
 class DareController extends MyController
 {
-
-	public function actions()
-	{
-		return array(
-			// captcha action renders the CAPTCHA image displayed on the contact page
-			'captcha'=>array(
-				'class'=>'CCaptchaAction',
-				'backColor'=>0xFFFFFF,
-			),
-			// page action renders "static" pages stored under 'protected/views/site/pages'
-			// They can be accessed via: index.php?r=site/page&view=FileName
-			'page'=>array(
-				'class'=>'CViewAction',
-			),
-		);
-        }
+    
+//      <!--****************************-->
+//      <!-- Functions related to pages -->
+//      <!--****************************-->
 
 	public function actionDare()
 	{                
@@ -33,17 +21,11 @@ class DareController extends MyController
             
             $this->render('dare',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory));
 	}
-
-	public function actionError()
-	{
-	    if($error=Yii::app()->errorHandler->error)
-	    {
-	    	if(Yii::app()->request->isAjaxRequest)
-	    		echo $error['message'];
-	    	else
-	        	$this->render('error', $error);
-	    }
-	}
+         
+        
+//      <!--********************************-->
+//      <!-- Functions not related to pages -->
+//      <!--********************************-->
        
 	public function actionAcceptDare()
 	{
@@ -68,10 +50,34 @@ class DareController extends MyController
                     echo "<span style='font-weight:bold; font-size: 2em';>DISAPPROVED</span>";
                 }
 	}
-         
-	/**
-	 * @return array action filters
-	 */
+
+	public function actionError()
+	{
+	    if($error=Yii::app()->errorHandler->error)
+	    {
+	    	if(Yii::app()->request->isAjaxRequest)
+	    		echo $error['message'];
+	    	else
+	        	$this->render('error', $error);
+	    }
+	}
+
+	public function actions()
+	{
+		return array(
+			// captcha action renders the CAPTCHA image displayed on the contact page
+			'captcha'=>array(
+				'class'=>'CCaptchaAction',
+				'backColor'=>0xFFFFFF,
+			),
+			// page action renders "static" pages stored under 'protected/views/site/pages'
+			// They can be accessed via: index.php?r=site/page&view=FileName
+			'page'=>array(
+				'class'=>'CViewAction',
+			),
+		);
+        }
+        
 	public function filters()
 	{
 		return array(
@@ -79,11 +85,6 @@ class DareController extends MyController
 		);
 	}
 
-	/**
-	 * Specifies the access control rules.
-	 * This method is used by the 'accessControl' filter.
-	 * @return array access control rules
-	 */
 	public function accessRules()
 	{
 		return array(

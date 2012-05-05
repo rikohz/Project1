@@ -131,7 +131,9 @@ $(function() {
     <div style="border:1px black solid;">
         <div class="form">
             <?php $form = $this->beginWidget('CActiveForm', array('id'=>'wall-form')); ?>
-                <div class="row"><?php echo $form->textArea($model,'content',array('style'=>'margin:2px;width:98%')); ?></div>
+            <label style="padding: 0 10px 0 0; margin: 0; display: block;">
+                <div class="row"><?php echo $form->textArea($model,'content',array('style'=>'width: 100%; border: 1px solid #333; padding: 4px;')); ?></div>
+                </label>
                 <div class="row" style="text-align:right; margin-right:2px;"><?php echo CHtml::submitButton('Submit'); ?></div>
             <?php $this->endWidget(); ?>
         </div>
@@ -155,20 +157,22 @@ $(function() {
                     <th rowspan="2"><img src="userImages/profilePicture_mini/<?php echo $row['picture'] . '_mini' . $row['pictureExtension']; ?>" /></th>
                     <td width="100%">
                         <span style="float:left;">
-                            <?php 
-                                switch($row['type']){
-                                    case 'WallMessage':
-                                        echo $row['displayUsername'] . " says:";
-                                        break;
-                                    case 'Challenge' :
-                                        echo $row['displayUsername'] . " has successfuly realized the following challenge (" . $row['category'] . ") :";
-                                        break;
-                                    case 'Truth' :
-                                    case 'Dare' :
-                                        echo $row['displayUsername'] . " has submitted the following " . $row['type'] . " (" . $row['category'] . ") :";
-                                        break;
-                                }
-                            ?>
+                            <b>
+                                <?php 
+                                    switch($row['type']){
+                                        case 'WallMessage':
+                                            echo $row['displayUsername'] . " says:";
+                                            break;
+                                        case 'Challenge' :
+                                            echo $row['displayUsername'] . " has successfuly realized the following challenge (" . $row['category'] . ") :";
+                                            break;
+                                        case 'Truth' :
+                                        case 'Dare' :
+                                            echo $row['displayUsername'] . " has submitted the following " . $row['type'] . " (" . $row['category'] . ") :";
+                                            break;
+                                    }
+                                ?>
+                            </b>
                         </span>
                         <span style="float:right;">
                             <!--*****************-->

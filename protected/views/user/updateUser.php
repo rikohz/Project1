@@ -3,14 +3,16 @@
   
   $this->pageTitle=Yii::app()->name . ' - Update Informations';
   $this->breadcrumbs=array(
+        'My Page'=>array('user/myPage'),
+        'My Settings'=>array('user/mySettings'),
 	'Update Informations',
   );
-if(Yii::app()->user->hasFlash('updateUserInformations')): ?>
+?>
 
-<div class="flash-success">
-	<?php echo Yii::app()->user->getFlash('updateUserInformations'); ?>
-</div>
-
+<?php if(Yii::app()->user->hasFlash('updateUserInformations')): ?>
+    <div class="flash-success">
+            <?php echo Yii::app()->user->getFlash('updateUserInformations'); ?>
+    </div>
 <?php else: ?>
 
 <div class="form">

@@ -2,38 +2,11 @@
 
 class SiteController extends MyController
 {
-	/**
-	 * Declares class-based actions.
-	 */
-	public function actions()
-	{
-		return array(
-			// captcha action renders the CAPTCHA image displayed on the contact page
-			'captcha'=>array(
-				'class'=>'CCaptchaAction',
-				'backColor'=>0xFFFFFF,
-			),
-			// page action renders "static" pages stored under 'protected/views/site/pages'
-			// They can be accessed via: index.php?r=site/page&view=FileName
-			'page'=>array(
-				'class'=>'CViewAction',
-			),
-		);
-	}
-        
-
-	public function actionError()
-	{
-	    if($error=Yii::app()->errorHandler->error)
-	    {
-	    	if(Yii::app()->request->isAjaxRequest)
-	    		echo $error['message'];
-	    	else
-	        	$this->render('error', $error);
-	    }
-	}
-
-        
+    
+//      <!--****************************-->
+//      <!-- Functions related to pages -->
+//      <!--****************************-->
+      
 	public function actionIndex()
 	{              
                 $generalRanking = MyFunctions::getRanking(NULL,'year');
@@ -43,13 +16,11 @@ class SiteController extends MyController
                 $this->render('index',array('generalRanking'=>$generalRanking,'truthRanking'=>$truthRanking,'dareRanking'=>$dareRanking));
 	}
 
-
 	public function actionRanking()
 	{        
                 $this->render('ranking');
 	}
-        
-        
+              
 	public function actionContact()
 	{
 		$model=new ContactForm;
@@ -66,49 +37,7 @@ class SiteController extends MyController
 		}
 		$this->render('contact',array('model'=>$model));
 	}
-        
-
-	public function actionVote()
-	{
-            if(isset($_POST['idTruth']))
-                $type = 'Truth';
-            if(isset($_POST['idDare']))
-                $type = 'Dare';
-                    
-            if(isset($type) && isset($_POST['vote']))
-            {
-                if(!VotingDetail::model()->exists("idUser = :idUser AND id$type = :id$type",array(':idUser'=>Yii::app()->user->getId(),":id$type"=>$_POST["id$type"])))
-                {
-                    $model = $type::model()->findByPk($_POST["id$type"]);             
-                    echo $model->addVote(Yii::app()->user->getId(), $_POST['vote']);               
-                }
-                else
-                    echo "Already Voted!";
-                return;
-            }
-            
-            return "ERROR";
-	}
-        
-
-	public function actionVoteChallenge()
-	{      
-            if(isset($_POST['idChallenge']) && isset($_POST['vote']))
-            {
-                if(!VotingDetail::model()->exists("idUser = :idUser AND idChallenge = :idChallenge",array(':idUser'=>Yii::app()->user->getId(),":idChallenge"=>$_POST["idChallenge"])))
-                {
-                    $model = Challenge::model()->findByPk($_POST["idChallenge"]);             
-                    echo $model->addVote(Yii::app()->user->getId(), $_POST['vote']);               
-                }
-                else
-                    echo "Already Voted!";
-                return;
-            }
-            
-            return "ERROR";
-	}
-        
-              
+                
 	public function actionSubmitIdea()
 	{            
             $model = new SubmitIdeaForm;          
@@ -138,8 +67,7 @@ class SiteController extends MyController
             } 
               $this->render('submitIdea',array('model'=>$model,'truthOrDare'=>$truthOrDare,'categories'=>$categories));   
 	}
-        
-        
+          
         public function actionComment()
 	{     
             if(isset($_GET['idTruth']) || isset($_GET['idDare'])) 
@@ -167,17 +95,57 @@ class SiteController extends MyController
                 $this->render('comment',array('model'=>$model,'comments'=>$comments,'idTruthOrDare'=>$idTruthOrDare,'type'=>$type));   	
             }
         }
-        
-        
+             
 	public function actionTest()
 	{  
-                $image = Yii::app()->image->load('userImages/default.png');
-                $image->resize(64, 64)->quality(75);
-                $image->save('userImages/default_mini.png');
-            
                 $this->render('test');
 	}
         
+        
+        
+//      <!--********************************-->
+//      <!-- Functions not related to pages -->
+//      <!--********************************-->
+        
+        
+	public function actionVote()
+	{
+            if(isset($_POST['idTruth']))
+                $type = 'Truth';
+            if(isset($_POST['idDare']))
+                $type = 'Dare';
+                    
+            if(isset($type) && isset($_POST['vote']))
+            {
+                if(!VotingDetail::model()->exists("idUser = :idUser AND id$type = :id$type",array(':idUser'=>Yii::app()->user->getId(),":id$type"=>$_POST["id$type"])))
+                {
+                    $model = $type::model()->findByPk($_POST["id$type"]);             
+                    echo $model->addVote(Yii::app()->user->getId(), $_POST['vote']);               
+                }
+                else
+                    echo "Already Voted!";
+                return;
+            }
+            
+            return "ERROR";
+	}
+        
+	public function actionVoteChallenge()
+	{      
+            if(isset($_POST['idChallenge']) && isset($_POST['vote']))
+            {
+                if(!VotingDetail::model()->exists("idUser = :idUser AND idChallenge = :idChallenge",array(':idUser'=>Yii::app()->user->getId(),":idChallenge"=>$_POST["idChallenge"])))
+                {
+                    $model = Challenge::model()->findByPk($_POST["idChallenge"]);             
+                    echo $model->addVote(Yii::app()->user->getId(), $_POST['vote']);               
+                }
+                else
+                    echo "Already Voted!";
+                return;
+            }
+            
+            return "ERROR";
+	}
         
         public function actionAddFavourite()
         {
@@ -199,20 +167,38 @@ class SiteController extends MyController
             }  
         }
         
-        
-	/**
-	 * This is the default 'index' action that is invoked
-	 * when an action is not explicitly requested by users.
-	 */
 	public function actionEvents()
 	{
                 $this->render('events');
 	}
-         
+    
+	public function actions()
+	{
+		return array(
+			// captcha action renders the CAPTCHA image displayed on the contact page
+			'captcha'=>array(
+				'class'=>'CCaptchaAction',
+				'backColor'=>0xFFFFFF,
+			),
+			// page action renders "static" pages stored under 'protected/views/site/pages'
+			// They can be accessed via: index.php?r=site/page&view=FileName
+			'page'=>array(
+				'class'=>'CViewAction',
+			),
+		);
+	}
         
-	/**
-	 * @return array action filters
-	 */
+	public function actionError()
+	{
+	    if($error=Yii::app()->errorHandler->error)
+	    {
+	    	if(Yii::app()->request->isAjaxRequest)
+	    		echo $error['message'];
+	    	else
+	        	$this->render('error', $error);
+	    }
+	}
+         
 	public function filters()
 	{
 		return array(
@@ -220,12 +206,6 @@ class SiteController extends MyController
 		);
 	}
 
-        
-	/**
-	 * Specifies the access control rules.
-	 * This method is used by the 'accessControl' filter.
-	 * @return array access control rules
-	 */
 	public function accessRules()
 	{
 		return array(

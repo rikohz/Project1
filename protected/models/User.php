@@ -40,6 +40,7 @@ class User extends CActiveRecord
         public $verifCode;
         public $newPassword;
         public $conf_newPassword;
+        public $pictureUploader;
 	
         /**
 	 * Returns the static model of the specified AR class.
@@ -85,9 +86,10 @@ class User extends CActiveRecord
 			array('verifCode', 'verifyCoinPassword','on'=>'register'),
 			array('serialNumber', 'verifyUnicitySerialNumber','on'=>'register'),
                         array('conf_password', 'compare', 'compareAttribute'=>'password','on'=>'register'),
-                        array('profilePicture', 'file', 'types'=>'jpg, jpeg, gif, png', 'maxSize'=> '2097152', 'tooLarge'=>'This file is too big...', 'wrongType'=>'Wrong format of file...', 'allowEmpty'=>true,'on'=>'register'),
+                        array('pictureUploader', 'file', 'types'=>'jpg, jpeg, gif, png', 'maxSize'=> '2097152', 'tooLarge'=>'This file is too big...', 'wrongType'=>'Wrong format of file...', 'allowEmpty'=>true,'on'=>'register'),
                         array('idProvince, idCity, idDistrict, profilePictureExtension', 'safe','on'=>'register'),
 			array('serialNumber', 'exist','message' => "Sorry, this Serial Number does not exist",'className'=>'verifIdentity','on'=>'register'),
+                        array('profilePicture, profilePictureExtension','safe','on'=>'register'),
                     
                         //Update User
                         array('conf_email','required','on'=>'updateUser'),
@@ -300,7 +302,7 @@ class User extends CActiveRecord
                     $image->crop(50, 50);
                     $image->save($toFileMini);
                     
-                    $result = true;               
+                    $result = 1;               
                 }
                 else
                     $result = "Problem during file transfer";     
@@ -419,5 +421,91 @@ class User extends CActiveRecord
 
            return array('total'=>$scoreTotal,'week'=>$scoreWeek,'month'=>$scoreMonth,'year'=>$scoreYear); 
        }
+
+       /**
+         * Create a new user
+	 * @return 1 if success 0 else
+	 */
+        public function createUser()
+        {
+            $result = 1;
+            
+            $this->registrationDate = date('Y-m-d');
+            $this->validation = uniqid();
+      
+            $transaction = $this->dbConnection->beginTransaction();
+            
+            try
+            {            
+                $this->save();
+             
+                //Get the idUser of the new User and specify it in the table verifIdentity
+                $idUser = Yii::app()->db->getLastInsertId();
+                $verifIdentity = VerifIdentity::model()->findByPk($this->serialNumber);
+                $verifIdentity->idUser = $idUser;
+                if(!$verifIdentity->save())
+                    throw new CDbException(null);     
+
+                //Upload of Profile Picture
+                if($this->profilePicture !== "default")
+                {
+                    $result = $this->addPicture($this->profilePicture, $this->profilePictureExtension);
+                    if($result !== 1)
+                    {
+                        $this->addError('pictureUploader',$result);
+                        throw new CException(null);                 
+                    }
+                }
+                
+                $transaction->commit();
+            }
+            catch(Exception $e)
+            {
+                if($e !== null)
+                    $this->addError('pictureUploader',"Problem during create process");
+                $transaction->rollBack();
+                $result = 0;
+            }  
+
+            return $result;
+        }
+
+       /**
+         * Update the profile picture of the user
+	 * @return 1 if success 0 else
+	 */
+        public function updatePicture($newPictureName, $newPictureExtension)
+        {
+            $result = 1; 
+            $oldprofilePictureName = $this->profilePicture;
+            $oldprofilePictureExtension = $this->profilePictureExtension;
+            $transaction = $this->dbConnection->beginTransaction();
+            
+            try
+            {                         
+                $this->profilePicture = $newPictureName;
+                $this->profilePictureExtension = $newPictureExtension;
+                if(!$this->save())
+                    throw new CDbException(null);  
+                
+                $result = $this->addPicture($newPictureName, $newPictureExtension,$oldprofilePictureName,$oldprofilePictureExtension);
+                if($result !== 1)
+                {
+                    $this->addError('pictureUploader',$result);
+                    throw new CException(null);                 
+                }  
+                
+                $transaction->commit();
+            }
+            catch(Exception $e)
+            {
+                if($e !== null)
+                    $this->addError('pictureUploader',"Problem during file transfer");
+                $transaction->rollBack();
+                $result = 0;
+            } 
+
+            return $result;
+        }
        
 }

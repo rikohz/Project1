@@ -3,14 +3,16 @@
   
   $this->pageTitle=Yii::app()->name . ' - Change Password';
   $this->breadcrumbs=array(
+        'My Page'=>array('user/myPage'),
+        'My Settings'=>array('user/mySettings'),
 	'Change Password',
   );
-if(Yii::app()->user->hasFlash('changePassword')): ?>
+?>
 
-<div class="flash-success">
-	<?php echo Yii::app()->user->getFlash('changePassword'); ?>
-</div>
-
+<?php if(Yii::app()->user->hasFlash('changePassword')): ?>
+    <div class="flash-success">
+            <?php echo Yii::app()->user->getFlash('changePassword'); ?>
+    </div>
 <?php else: ?>
 
 <div class="form">

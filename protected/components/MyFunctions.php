@@ -90,15 +90,19 @@ class MyFunctions {
     */
     public static function arraySort($array,$subKey,$order='ASC')
     {
-         foreach( $array as $k=>$v )
-            $b[$k] = strtolower( $v[$subKey] );
-         if( $order === 'ASC' )
-            asort( $b );
-         if( $order === 'DESC' )
-            arsort( $b );
-         foreach( $b as $key=>$val )
-            $c[$key] = $array[$key];
-         return $c;
+        if($array !== array())
+        {
+             foreach( $array as $k=>$v )
+                $b[$k] = strtolower( $v[$subKey] );
+             if( $order === 'ASC' )
+                asort( $b );
+             if( $order === 'DESC' )
+                arsort( $b );
+             foreach( $b as $key=>$val )
+                $c[$key] = $array[$key];
+             return $c;
+        }
+        return array();
     }
      
     

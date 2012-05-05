@@ -3,15 +3,7 @@
   
   $this->pageTitle=Yii::app()->name . ' - Favorites';
   $this->breadcrumbs=array(
-	'Favorites',
+	'Favourites',
   );
-  
-//Flash add favourite list
-if(Yii::app()->user->hasFlash('addFavouriteList')): ?>
-<div class="flash-success">
-	<?php echo Yii::app()->user->getFlash('addFavouriteList'); ?>
-</div>
-<?php else: ?>
-
-
-<?php endif; ?>
+?>
+<p>My Favourites</p>

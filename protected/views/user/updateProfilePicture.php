@@ -11,7 +11,7 @@ $(document).ready(function(){
 
 	var thumb = $('img#thumb');
         
-	new AjaxUpload('User_profilePicture', {
+	new AjaxUpload('User_pictureUploader', {
 		action: '/TruthOrDare/script/upload.php',
 		name: 'userfile',
 		onSubmit: function(file, extension) {
@@ -33,8 +33,8 @@ $(document).ready(function(){
                                 document.getElementById('errorUpload').innerHTML = "Problem during file transfer";
                                 break; 
                             }
-                            thumb.attr('src', ''); 
-                            $('#validateImage').val(0);      
+//                            thumb.attr('src', ''); 
+//                            $('#validateImage').val(0);      
                         } else {
                             thumb.load(function(){
 				$('div.preview').removeClass('loading');
@@ -51,15 +51,26 @@ $(document).ready(function(){
 });
     
 </script>
+<?php 
+  @session_start();  
+  
+  $this->pageTitle=Yii::app()->name . ' - Update Profile Picture';
+  $this->breadcrumbs=array(
+        'My Page'=>array('user/myPage'),
+        'My Settings'=>array('user/mySettings'),
+	'Update Profile Picture',
+  );
+?>
 <style type="text/css">  
     div.preview {margin-left: auto; margin-right: auto; height: 150px; width: 150px;  border: 2px dotted #CCCCCC;}
     div.preview.loading {background: url(/TruthOrDare/images/loading.gif) no-repeat 63px 63px;}
     div.preview.loading img {display: none;}
 </style>
+
 <?php if(Yii::app()->user->hasFlash('updateProfilePicture')): ?>
-<div class="flash-success">
-	<?php echo Yii::app()->user->getFlash('updateProfilePicture'); ?>  
-</div>
+    <div class="flash-success">
+        <?php echo Yii::app()->user->getFlash('updateProfilePicture'); ?>  
+    </div>
 <?php else: ?>
 
 <div class="form">
@@ -77,13 +88,14 @@ $(document).ready(function(){
 
 	<div class="row">
 		<?php echo $form->labelEx($model,'profilePicture'); ?>
-		<?php echo $form->fileField($model,'profilePicture'); ?>
+		<?php echo $form->fileField($model,'pictureUploader'); ?>
+		<?php echo $form->error($model,'pictureUploader'); ?>
 		<div class ="errorMessage" id="errorUpload" style="display: inline-block; margin-left: 5px;"></div>
 	</div>
              
         <div class="row">
-            <input type="hidden" name="tempName" value="<?php echo $model->profilePicture; ?>" id="tempName" />
-            <input type="hidden" name="extension" value="<?php echo $model->profilePictureExtension; ?>" id="extension" />
+            <input type="hidden" name="User[profilePicture]" value="<?php echo $model->profilePicture; ?>" id="tempName" />
+            <input type="hidden" name="User[profilePictureExtension]" value="<?php echo $model->profilePictureExtension; ?>" id="extension" />
             <input type="hidden" name="validateImage" id="validateImage" value="0" />
             <p align="center"><u>Preview</u></p>
             <div class="preview">
