@@ -55,79 +55,43 @@ class UserController extends MyController
 	public function actionDeleteCoin()
 	{
             if(isset($_POST['serialNumber']))
-            {
+            {  
                 $verifIdentity = VerifIdentity::model()->findByPk($_POST['serialNumber']);
                 //Verify that the person who deletes the coin is its owner
                 if($verifIdentity->idUser == Yii::app()->user->getId())
                 {
-                    $verifIdentity->idUser = null;
-                    if($verifIdentity->save())
-                        return;
+                    //User can not delete coin if only one registered
+                    if(VerifIdentity::model()->count('idUser = :idUser',array(':idUser'=>Yii::app()->user->getId())) > 1)
+                    {   
+                        $verifIdentity->idUser = null;
+                        if($verifIdentity->save())
+                            return;
+                    }
+                    echo "You need at least one coin!";
+                    return;
                 }
             }
             
-            return "ERROR";
+            echo "ERROR";
+            return;
 	}
 
 	public function actionMyPage()
 	{
             //User Score
             $user = User::model()->with('province','city','district')->findByPk(Yii::app()->user->getId());
-            $scoreTruth = $user->getScore('truth');
-            $scoreDare = $user->getScore('dare');
-            
-            //Add message to the Wall
-            $model = new UserWall;
-            if(isset($_POST['UserWall']))
-            {
-                $model->attributes = $_POST['UserWall'];
-                $model->idUserFrom = Yii::app()->user->getId();
-                $model->idUserTo = Yii::app()->user->getId();
-                $model->createDate = date('Y-m-d, H:i:s');
-                $model->save();
-                $model->content='';
-            }
-            
-            //Display Wall
-            $criteria = new CDbCriteria;
-            $criteria->condition = 'idUserTo = :idUser';
-            $criteria->params = array(':idUser'=>Yii::app()->user->getId());
-            $criteria->order = 'createDate DESC';
-            $wallComments = userWall::model()->with('userFrom')->findAll($criteria);
-            
-            $wall = array(); $i = 0;
-            foreach($wallComments as $row)
-            {
-                $wall[$i]['content'] = $row->content;
-                $wall[$i]['createDate'] = $row->createDate;
-                $wall[$i]['picture'] = $row->userFrom->profilePicture;
-                $wall[$i]['pictureExtension'] = $row->userFrom->profilePictureExtension;
-                $i++;   
-            }
-            
-            //Display Challenges
-            $criteria->condition = 'success = :success';
-            $criteria->params = array('success'=>1);
-            $challenges = Challenge::model()->with('truth','dare')->findAll($criteria);
-            foreach($challenges as $row)
-            {
-                $wall[$i]['content'] = isset($row->truth) ? $row->truth->truth : $row->dare->dare;
-                $wall[$i]['createDate'] = $row->createDate;
-                $wall[$i]['picture'] = $user->profilePicture;
-                $wall[$i]['pictureExtension'] = $user->profilePictureExtension;
-                $i++;   
-            }
-            
-            // IdActivite croissants
-             function cmp($a,$b)
-             {
-                 return $b['createDate']-$a['createDate'];
-             }
-             usort($wall,"cmp");
-            
-            
-            
-            $this->render('myPage',array('model'=>$model,'wall'=>$wall,'user'=>$user,'scoreTruth'=>$scoreTruth,'scoreDare'=>$scoreDare));
+
+            //Get the scores of the User
+            $score = array(
+                'scoreTruthVoteIdeas'=>$user->getScoreVoteIdeas('truth'),
+                'scoreTruthChallenges'=>$user->getScoreChallenges('truth'),
+                'scoreTruthVoteChallenges'=>$user->getScoreVoteChallenges('truth'),
+                'scoreDareVoteIdeas'=>$user->getScoreVoteIdeas('dare'),
+                'scoreDareChallenges'=>$user->getScoreChallenges('dare'),
+                'scoreDareVoteChallenges'=>$user->getScoreVoteChallenges('dare')
+            );
+             
+            $this->render('myPage',array('user'=>$user,'score'=>$score));
 	}
         
 	public function actionRegister()

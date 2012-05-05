@@ -24,14 +24,14 @@ class DareController extends MyController
             $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
       
             //Filter and order criterias
-            if(isset($_GET['category']))
-                Yii::app()->session['category'] = $_GET['category']; 
-            $category = Yii::app()->session['category'];
+            if(isset($_GET['idCategory']))
+                Yii::app()->session['idCategory'] = $_GET['idCategory']; 
+            $idCategory = Yii::app()->session['idCategory'];
             if(isset($_GET['order']))
                 Yii::app()->session['order'] = $_GET['order']; 
             $order = Yii::app()->session['order'];
             
-            $this->render('dare',array('categories'=>$categories,'order'=>$order,'category'=>$category));
+            $this->render('dare',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory));
 	}
 
 	public function actionError()
@@ -88,11 +88,11 @@ class DareController extends MyController
 	{
 		return array(
 			array('allow',  // allow all users to perform 'index' and 'view' actions
-				'actions'=>array('error','captcha'),
+				'actions'=>array('error','captcha','dare'),
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('dare'),
+				'actions'=>array(),
 				'users'=>array('@'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions

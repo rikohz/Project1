@@ -5,9 +5,10 @@
  *
  * The followings are the available columns in table 'votingDetail':
  * @property string $idVotingDetail
- * @property string $idUser
+ * @property integer $idUser
  * @property integer $idTruth
  * @property integer $idDare
+ * @property integer $idChallenge
  * @property integer $voteType
  * @property string $voteDate
  * 
@@ -19,15 +20,11 @@
 
 class VotingDetail extends CActiveRecord
 {
-    public $scoreTotal;
-    public $scoreTruthWeek;
-    public $scoreDareWeek;
-    public $scoreTruthMonth;
-    public $scoreDareMonth;
-    public $scoreTruthYear;
-    public $scoreDareYear;
-    public $scoreTruth;
-    public $scoreDare;
+        public $score;
+        public $scoreWeek;
+        public $scoreMonth;
+        public $scoreYear;
+    
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @return VotingDetail the static model class
@@ -54,11 +51,10 @@ class VotingDetail extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('idUser, voteType, voteDate', 'required'),
-			array('idTruth, idDare, voteType', 'numerical', 'integerOnly'=>true),
-			array('idUser', 'length', 'max'=>20),
+			array('idTruth, idDare, idChallenge, voteType', 'numerical', 'integerOnly'=>true),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('idVotingDetail, idUser, idTruth, idDare, voteType, voteDate', 'safe', 'on'=>'search'),
+			array('idVotingDetail, idUser, idTruth, idDare, idChallenge, voteType, voteDate', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -70,9 +66,10 @@ class VotingDetail extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'truth' => array(self::BELONGS_TO, 'Truth', 'idTruth','joinType'=>'INNER JOIN','on'=>"truth.idUser = :idUser",'select'=>false),
-			'dare' => array(self::BELONGS_TO, 'Dare', 'idDare','joinType'=>'INNER JOIN','on'=>"dare.idUser = :idUser",'select'=>false),
-			'user' => array(self::BELONGS_TO, 'User', 'idUser','join'=>'INNER JOIN'),
+			'truth' => array(self::BELONGS_TO, 'Truth', 'idTruth','select'=>false),
+			'dare' => array(self::BELONGS_TO, 'Dare', 'idDare','select'=>false),
+			'challenge' => array(self::BELONGS_TO, 'Challenge', 'idChallenge','select'=>false),
+			'user' => array(self::BELONGS_TO, 'User', 'idUser'),
 		);
 	}
 
@@ -86,6 +83,7 @@ class VotingDetail extends CActiveRecord
 			'idUser' => 'Id User',
 			'idTruth' => 'Id Truth',
 			'idDare' => 'Id Dare',
+			'idChallenge' => 'Id Challenge',
 			'voteType' => 'Vote Type',
 			'voteDate' => 'Vote Date'
 		);
@@ -106,6 +104,7 @@ class VotingDetail extends CActiveRecord
 		$criteria->compare('idUser',$this->idUser,true);
 		$criteria->compare('idTruth',$this->idTruth);
 		$criteria->compare('idDare',$this->idDare);
+		$criteria->compare('idChallenge',$this->idChallenge);
 		$criteria->compare('voteType',$this->voteType);
 		$criteria->compare('voteDate',$this->voteDate,true);
 

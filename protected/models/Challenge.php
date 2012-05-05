@@ -14,7 +14,9 @@
  * @property integer $voteDown
  * @property integer $private
  * @property string $picturePath
+ * @property string $pictureExtension
  * @property string $createDate
+ * @property string $finishDate
  *
  * The followings are the available model relations:
  * @property User $idUserFrom0
@@ -24,6 +26,11 @@
  */
 class Challenge extends CActiveRecord
 {
+        public $score;
+        public $scoreWeek;
+        public $scoreMonth;
+        public $scoreYear;
+    
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
@@ -53,9 +60,11 @@ class Challenge extends CActiveRecord
 			array('idUserFrom, idUserTo, private, createDate', 'required'),
 			array('idUserFrom, idUserTo, idTruth, idDare, success, voteUp, voteDown, private', 'numerical', 'integerOnly'=>true),
 			array('picturePath', 'length', 'max'=>255),
+			array('pictureExtension', 'length', 'max'=>5),
+			array('finishDate', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('idChallenge, idUserFrom, idUserTo, idTruth, idDare, success, voteUp, voteDown, private, picturePath, createDate', 'safe', 'on'=>'search'),
+			array('idChallenge, idUserFrom, idUserTo, idTruth, idDare, success, voteUp, voteDown, private, picturePath, pictureExtension, createDate, finishDate', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -90,7 +99,9 @@ class Challenge extends CActiveRecord
 			'voteDown' => 'Vote Down',
 			'private' => 'Private',
 			'picturePath' => 'Picture Path',
+			'pictureExtension' => 'Picture Extension',
 			'createDate' => 'Create Date',
+			'finishDate' => 'Finish Date',
 		);
 	}
 
@@ -115,10 +126,38 @@ class Challenge extends CActiveRecord
 		$criteria->compare('voteDown',$this->voteDown);
 		$criteria->compare('private',$this->private);
 		$criteria->compare('picturePath',$this->picturePath,true);
+		$criteria->compare('pictureExtension',$this->pictureExtension,true);
 		$criteria->compare('createDate',$this->createDate,true);
+		$criteria->compare('finishDate',$this->finishDate,true);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
 		));
 	}
+        
+        /**
+         * Returns the new score of the Challenge
+	 * @return Int
+	 */
+        public function addVote($idUser,$typeVote)
+        {         
+            //We add the vote up or down
+            if($typeVote == 'up')
+                $this->voteUp += 1;
+            else
+                $this->voteDown += 1;  
+            
+            //We save
+            $this->save();
+                       
+            //We add the vote to the table VotingDetail
+            $votingDetail = new VotingDetail;
+            $votingDetail->idUser = $idUser;
+            $votingDetail->idChallenge = $this->idChallenge;
+            $votingDetail->voteDate = date('Y-m-d, H:i:s');
+            $votingDetail->voteType = $typeVote == 'up'? 1 : 0;
+            $votingDetail->save(); 
+
+            return $this->voteUp - $this->voteDown;;
+        }
 }

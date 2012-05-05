@@ -119,8 +119,8 @@ class User extends CActiveRecord
 		return array(
 			'comments' => array(self::HAS_MANY, 'Comment', 'idUser'),
 			'dares' => array(self::HAS_MANY, 'Dare', 'idUser'),
-			'scoreDare' => array(self::HAS_ONE, 'Scoredare', 'idUser','select'=>'CASE WHEN scoreDare.score IS NULL THEN 0 ELSE scoreDare.score END AS score'),
-			'scoreTruth' => array(self::HAS_ONE, 'Scoretruth', 'idUser','select'=>'CASE WHEN scoreTruth.score IS NULL THEN 0 ELSE scoreTruth.score END AS score'),
+			'scoreDare' => array(self::HAS_ONE, 'Scoredare', 'idUser'),
+			'scoreTruth' => array(self::HAS_ONE, 'Scoretruth', 'idUser'),
 			'truths' => array(self::HAS_MANY, 'Truth', 'idUser'),
                         'verifidentities' => array(self::HAS_MANY, 'Verifidentity', 'idUser'),
 			'votingdetails' => array(self::HAS_MANY, 'Votingdetail', 'idUser'),
@@ -189,7 +189,10 @@ class User extends CActiveRecord
 		));
 	}
         
-        //Verify that the Coin Password is the right one according to the Coin Serial Number
+        /**
+	 * Validation Rule
+         * Add error if the SerialNumber and the Password don't match
+	 */
         public function verifyCoinPassword($attribute,$params)
 	{
                     if(!VerifIdentity::model()->exists('serialNumber = :serialNumber AND verifCode = :verifCode',array(':serialNumber'=>$this->serialNumber,':verifCode'=>$this->verifCode)))
@@ -197,7 +200,10 @@ class User extends CActiveRecord
 
 	}
         
-        //Verify that the Serial Number is not linked with any other person yet
+        /**
+	 * Validation Rule
+         * Add error if the SerialNumber is already linked with a person
+	 */
         public function verifyUnicitySerialNumber($attribute,$params)
 	{
                     $verifIdentity = VerifIdentity::model()->findByPk($this->serialNumber);
@@ -209,6 +215,10 @@ class User extends CActiveRecord
                     
         }
         
+        /**
+	 * Validation Rule
+         * Add error if the Username and the Password don't match
+	 */
         public function verifyPassword($attribute,$params)
         {
             if(!$this->hasErrors())
@@ -218,129 +228,34 @@ class User extends CActiveRecord
             }
         }
         
+        /**
+         * For registration or change password, we hash the password before to save it
+	 */
         public function beforeSave() {
             if(($this->getScenario() === 'register') || ($this->getScenario() === 'changePassword'))    
                 $this->password = md5($this->password);
             return true;
         }
 
-        //Get the highest coin level of the user
+        /**
+	 * Returns the level of the User according to his highest registered coin
+	 * @return Int as User level
+	 */
         public function getLevel()
 	{
             $criteria = new CDbCriteria;
-            $criteria->select = 't.level';
-            $criteria->condition = ' idUser = ' . $this->idUser;
+            $criteria->condition = " idUser = $this->idUser ";
             $criteria->order = ' t.level DESC ';
-            $criteria->limit = 1;
             
-            $userCoins = VerifIdentity::model()->findAll($criteria);
+            $userCoins = VerifIdentity::model()->find($criteria);
                     
-            if($userCoins != null)
-                return $userCoins[0]['level'];
-            
-            return 1;                              
+            return $userCoins === null ? 1 : $userCoins['level'];                              
         }
-        
-        //Get the Truth or Dare score of the user
-       public function getScore($type=null)
-       {
-           $scoreWeek = 0;
-           $scoreMonth = 0;
-           $scoreYear = 0;
-           $scoreTotal = 0;
-           
-           //Initialize dates
-           $dayOfWeek = CTimestamp::getDayofWeek(date('Y'),date('n'),date('d'));
-           $minDateSubmitWeek = date('Y-m-d',strtotime(date("Y-m-d") . " -" . ($dayOfWeek -1) . "day")); 
-           $minDateSubmitMonth = date('Y-m-d',strtotime(date("Y-m-d") . " -" . (date('d') -1) . "day")); 
-           $cDateFormatter = new CDateFormatter(Yii::app()->language);
-           $dayOfYear = $cDateFormatter->format("D",date('Y-m-d'));
-           $minDateSubmitYear = date('Y-m-d',strtotime(date("Y-m-d") . " -" . ($dayOfYear) . "day"));
-           
-           //Initialize general criterias
-           $criteria = new CDbCriteria;
-           $criteria->params = array(':idUser'=>$this->idUser);
-           
-           //Truth Related Score
-           if($type == null || $type == 'truth')
-           {
-               $criteria->group = " truth.idUser ";
-               $criteria->select = " SUM(CASE WHEN t.voteDate >= '$minDateSubmitWeek' THEN (CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) END) AS scoreTruthWeek, ";
-               $criteria->select .= " SUM(CASE WHEN t.voteDate >= '$minDateSubmitMonth' THEN (CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) END) AS scoreTruthMonth, ";
-               $criteria->select .= " SUM(CASE WHEN t.voteDate >= '$minDateSubmitYear' THEN (CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) END) AS scoreTruthYear, ";
-               $criteria->select .= " SUM(CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) AS scoreTruth ";
-               $scoreTruth = VotingDetail::model()->with('truth')->find($criteria);
-               $scoreTotal += $scoreTruth['scoreTruth'] === null? 0 : $scoreTruth->scoreTruth;
-               $scoreWeek += $scoreTruth['scoreTruthWeek'] === null? 0 : $scoreTruth->scoreTruthWeek;
-               $scoreMonth += $scoreTruth['scoreTruthMonth'] === null? 0 : $scoreTruth->scoreTruthMonth;
-               $scoreYear += $scoreTruth['scoreTruthYear'] === null? 0 : $scoreTruth->scoreTruthYear;
-           }
-           
-           //Dare Related Score
-           if($type == null || $type == 'dare')
-           {
-               $criteria->group = " dare.idUser ";
-               $criteria->select = " SUM(CASE WHEN t.voteDate >= '$minDateSubmitWeek' THEN (CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) END) AS scoreDareWeek, ";
-               $criteria->select .= " SUM(CASE WHEN t.voteDate >= '$minDateSubmitMonth' THEN (CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) END) AS scoreDareMonth, ";
-               $criteria->select .= " SUM(CASE WHEN t.voteDate >= '$minDateSubmitYear' THEN (CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) END) AS scoreDareYear, ";
-               $criteria->select .= " SUM(CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) AS scoreDare ";
-               $scoreDare = VotingDetail::model()->with('dare')->find($criteria);
-               $scoreTotal += $scoreDare['scoreDare'] === null? 0 : $scoreDare->scoreDare;
-               $scoreWeek += $scoreDare['scoreDareWeek'] === null? 0 : $scoreDare->scoreDareWeek;
-               $scoreMonth += $scoreDare['scoreDareMonth'] === null? 0 : $scoreDare->scoreDareMonth;
-               $scoreYear += $scoreDare['scoreDareYear'] === null? 0 : $scoreDare->scoreDareYear;
-           }
-           
-           return array('scoreTotal'=>$scoreTotal,'scoreWeek'=>$scoreWeek,'scoreMonth'=>$scoreMonth,'scoreYear'=>$scoreYear);
-       }
-        
-        //Get the Truth or Dare score of the user
-       public static function getRanking($type=null,$period=null,$idCategory=null,$gender=null)
-       {
-           switch($period)
-           {
-               case null:
-                    $minDateSubmit = "2012-01-01";
-                    break;
-               case 'week':
-                    $dayOfWeek = CTimestamp::getDayofWeek(date('Y'),date('n'),date('d'));
-                    $minDateSubmit = date('Y-m-d',strtotime(date("Y-m-d") . " -" . ($dayOfWeek -1) . "day")); 
-                    break;
-               case 'month':
-                    $minDateSubmit = date('Y-m-d',strtotime(date("Y-m-d") . " -" . (date('d') -1) . "day")); 
-                    break;
-               case 'year':
-                    $cDateFormatter = new CDateFormatter(Yii::app()->language);
-                    $dayOfYear = $cDateFormatter->format("D",date('Y-m-d'));
-                    $minDateSubmit = date('Y-m-d',strtotime(date("Y-m-d") . " -" . ($dayOfYear) . "day"));
-                    break;
-           }   
-           
-           $query = " SELECT US.username, IFNULL(TR.ScoreTruth,0) AS ScoreTruth, IFNULL(DA.ScoreDare,0) AS ScoreDare, (IFNULL(TR.ScoreTruth,0) + IFNULL(DA.ScoreDare,0)) AS Score ";
-           $query .= " FROM user US ";
-           $query .= " LEFT JOIN ";
-           $query .= " (SELECT idUser, SUM(voteUp - voteDown) AS ScoreTruth ";
-           $query .= " FROM truth ";
-           $query .= " WHERE dateSubmit >= '$minDateSubmit' ";
-           $query .= $idCategory == NULL ? "" : " AND idCategory = $idCategory ";
-           $query .= " GROUP BY idUser) TR ON TR.idUser = US.idUser ";
-           $query .= " LEFT JOIN ";
-           $query .= " (SELECT idUser, SUM(voteUp - voteDown) AS ScoreDare ";
-           $query .= " FROM dare ";
-           $query .= " WHERE dateSubmit >= '$minDateSubmit' ";
-           $query .= $idCategory == NULL ? "" : " AND idCategory = $idCategory ";
-           $query .= " GROUP BY idUser) DA ON DA.idUser = US.idUser ";
-           $query .= " WHERE 1 ";
-           $query .= $gender == NULL ? "" : " AND US.gender = $gender ";
-           $query .= $type == 'truth' ? " ORDER BY IFNULL(TR.ScoreTruth,0) DESC " : "";
-           $query .= $type == 'dare' ? " ORDER BY IFNULL(DA.ScoreDare,0) DESC " : "";
-           $query .= $type == NULL ? " ORDER BY (IFNULL(TR.ScoreTruth,0) + IFNULL(DA.ScoreDare,0)) DESC " : "";
-           $query .= " LIMIT 0,10 ";
-           
-           $result = Yii::app()->db->createCommand($query)->queryAll();                 
-           return $result;
-       }
 
+        /**
+	 * Add the profile Picture in the 3 different sizes folders
+	 * @return True or the Error Message
+	 */
         public function addPicture($pictureName, $extension, $oldProfilePictureName=null,$oldPictureProfileExtension=null)
         {
             
@@ -392,5 +307,117 @@ class User extends CActiveRecord
             }
             return $result;
         }
+         
+        
+       /**
+         * Returns the Truth score of the User $idUser related to the votes of his/her submitted ideas
+	 * @return array()
+	 */
+       public function getScoreVoteIdeas($type=null)
+       {
+           if($type == null)
+               return getScoreVoteIdeas('truth') + getScoreVoteIdeas('dare');
+           else
+           {
+               //Prepare Query
+               $criteria = new CDbCriteria;
+               $criteria->group = " $type.idUser ";
+               $criteria->select = " SUM(CASE WHEN t.voteDate >= :minDateSubmitWeek THEN (CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) END) AS scoreWeek, ";
+               $criteria->select .= " SUM(CASE WHEN t.voteDate >= :minDateSubmitMonth THEN (CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) END) AS scoreMonth, ";
+               $criteria->select .= " SUM(CASE WHEN t.voteDate >= :minDateSubmitYear THEN (CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) END) AS scoreYear, ";
+               $criteria->select .= " SUM(CASE t.voteType WHEN 1 THEN 1 ELSE -1 END) AS score ";
+               $criteria->with = array($type);
+               $criteria->addCondition(" $type.idUser = :idUser ");
+
+               //Bind Parameters
+               $criteria->params = array(':idUser'=>$this->idUser);
+               $criteria->params[':minDateSubmitWeek'] = MyFunctions::getFirstDayWeek();
+               $criteria->params[':minDateSubmitMonth'] = MyFunctions::getFirstDayMonth();
+               $criteria->params[':minDateSubmitYear'] = MyFunctions::getFirstDayYear();
+
+               //Execute Query
+               $result = VotingDetail::model()->find($criteria);
+
+               //Fetch results
+               $scoreTotal = $result['score'] === null? 0 : $result->score;
+               $scoreWeek = $result['scoreWeek'] === null? 0 : $result->scoreWeek;
+               $scoreMonth = $result['scoreMonth'] === null? 0 : $result->scoreMonth;
+               $scoreYear = $result['scoreYear'] === null? 0 : $result->scoreYear;
+
+               return array('total'=>$scoreTotal,'week'=>$scoreWeek,'month'=>$scoreMonth,'year'=>$scoreYear);
+           }
+       }
+        
+       /**
+         * Returns the Truth score of the User $idUser related to the Challenges he/she successfuly realized
+	 * @return array()
+	 */
+       public function getScoreChallenges($type)
+       {          
+           //Prepare Query
+           $criteria = new CDbCriteria;
+           $criteria->group = " t.idUserTo ";
+           $criteria->select = " SUM(CASE WHEN t.finishDate >= :minDateSubmitWeek THEN 5 END) AS scoreWeek, ";
+           $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitMonth THEN 5 END) AS scoreMonth, ";
+           $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitYear THEN 5 END) AS scoreYear, ";
+           $criteria->select .= " SUM(5) AS score ";
+           $criteria->addCondition(' t.success = 1 ');
+           $criteria->addCondition(' t.idUserTo = :idUser ');
+           if($type !== null)
+                $criteria->addCondition(" t.id$type IS NOT NULL ");
+
+           //Bind Parameters
+           $criteria->params = array(':idUser'=>$this->idUser);
+           $criteria->params[':minDateSubmitWeek'] = MyFunctions::getFirstDayWeek();
+           $criteria->params[':minDateSubmitMonth'] = MyFunctions::getFirstDayMonth();
+           $criteria->params[':minDateSubmitYear'] = MyFunctions::getFirstDayYear();
+
+           //Execute Query
+           $result = Challenge::model()->find($criteria);
+
+           //Fetch results
+           $scoreTotal = $result['score'] === null? 0 : $result->score;
+           $scoreWeek = $result['scoreWeek'] === null? 0 : $result->scoreWeek;
+           $scoreMonth = $result['scoreMonth'] === null? 0 : $result->scoreMonth;
+           $scoreYear = $result['scoreYear'] === null? 0 : $result->scoreYear;
+
+           return array('total'=>$scoreTotal,'week'=>$scoreWeek,'month'=>$scoreMonth,'year'=>$scoreYear);
+       }
+        
+       /**
+         * Returns the Truth score of the User $idUser related to the vote of the Challenges he/she successfuly realized
+	 * @return array()
+	 */
+       public function getScoreVoteChallenges($type)
+       {         
+           //Prepare Query
+           $criteria = new CDbCriteria;
+           $criteria->group = " t.idUserTo ";
+           $criteria->select = " SUM(CASE WHEN t.finishDate >= :minDateSubmitWeek THEN t.voteUp - t.voteDown END) AS scoreWeek, ";
+           $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitMonth THEN t.voteUp - t.voteDown END) AS scoreMonth, ";
+           $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitYear THEN t.voteUp - t.voteDown END) AS scoreYear, ";
+           $criteria->select .= " SUM(t.voteUp - t.voteDown) AS score ";
+           $criteria->addCondition(' t.success = 1 ');
+           $criteria->addCondition(' t.idUserTo = :idUser ');
+           if($type !== null)
+                $criteria->addCondition(" t.id$type IS NOT NULL ");
+
+           //Bind Parameters
+           $criteria->params = array(':idUser'=>$this->idUser);
+           $criteria->params[':minDateSubmitWeek'] = MyFunctions::getFirstDayWeek();
+           $criteria->params[':minDateSubmitMonth'] = MyFunctions::getFirstDayMonth();
+           $criteria->params[':minDateSubmitYear'] = MyFunctions::getFirstDayYear();
+
+           //Execute Query
+           $result = Challenge::model()->find($criteria);
+
+           //Fetch results
+           $scoreTotal = $result['score'] === null? 0 : $result->score;
+           $scoreWeek = $result['scoreWeek'] === null? 0 : $result->scoreWeek;
+           $scoreMonth = $result['scoreMonth'] === null? 0 : $result->scoreMonth;
+           $scoreYear = $result['scoreYear'] === null? 0 : $result->scoreYear;
+
+           return array('total'=>$scoreTotal,'week'=>$scoreWeek,'month'=>$scoreMonth,'year'=>$scoreYear); 
+       }
        
 }

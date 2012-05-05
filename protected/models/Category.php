@@ -96,7 +96,7 @@ class Category extends CActiveRecord
         public function levelFilter($level=1)
         {
             $this->getDbCriteria()->mergeWith(array(
-                'condition'=>"level<=$level",
+                'condition'=>"level <= $level",
             ));
             return $this;
         }

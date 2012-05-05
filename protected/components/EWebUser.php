@@ -27,7 +27,7 @@ class EWebUser extends CWebUser{
     function isAdmin(){
         $user = $this->loadUser();
         if ($user)
-           return $user->username=='admin';
+           return $user->username == 'Eric';
         return false;
     }
  
@@ -43,11 +43,28 @@ class EWebUser extends CWebUser{
         return $this->level;                  
     }
  
-    function getScore($type=null){
+    function getScoreVoteIdeas($type=null){
         $user = $this->loadUser();
         if($user)
-            return $user->getScore($type);
-        return false;
+            return $user->getScoreVoteIdeas($type);
+        else
+            return false;
+    }
+ 
+    function getScoreChallenges($type=null){
+        $user = $this->loadUser();
+        if($user)
+            return $user->getScoreChallenges($type);
+        else
+            return false;
+    }
+ 
+    function getScoreVoteChallenges($type=null){
+        $user = $this->loadUser();
+        if($user)
+            return $user->getScoreVoteChallenges($type);
+        else
+            return false;
     }
  
     function getTruthRankName($scoreTruth){

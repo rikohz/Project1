@@ -4,21 +4,20 @@
  * This is the model class for table "vw_scoredare".
  *
  * The followings are the available columns in table 'vw_scoredare':
- * @property string $idUser
+ * @property integer $idUser
  * @property string $score
  */
-class Scoredare extends CActiveRecord
+class ScoreDare extends CActiveRecord
 {
     
         public function primaryKey()
         {
             return 'idUser';        
         }
-        
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.
-	 * @return Scoredare the static model class
+	 * @return ScoreDare the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -41,8 +40,8 @@ class Scoredare extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('idUser', 'length', 'max'=>20),
-			array('score', 'length', 'max'=>33),
+			array('idUser', 'numerical', 'integerOnly'=>true),
+			array('score', 'length', 'max'=>35),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
 			array('idUser, score', 'safe', 'on'=>'search'),
@@ -57,7 +56,6 @@ class Scoredare extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-                    'user' => array(self::HAS_ONE, 'User', 'idUser'),
 		);
 	}
 
@@ -83,7 +81,7 @@ class Scoredare extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('idUser',$this->idUser,true);
+		$criteria->compare('idUser',$this->idUser);
 		$criteria->compare('score',$this->score,true);
 
 		return new CActiveDataProvider($this, array(

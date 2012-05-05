@@ -20,27 +20,7 @@ class SiteController extends MyController
 			),
 		);
 	}
-
-	public function actionIndex()
-	{              
-                $generalRanking = User::getRanking(NULL,'year');
-                $truthRanking = User::getRanking('truth','year');
-                $dareRanking = User::getRanking('dare','year');    
-                
-                $this->render('index',array('generalRanking'=>$generalRanking,'truthRanking'=>$truthRanking,'dareRanking'=>$dareRanking));
-	}
-
-
-	public function actionRanking()
-	{       
-                //A COMPLETER
-            
-                $generalRanking = User::getRanking(NULL,'year');
-                $truthRanking = User::getRanking('truth','year');
-                $dareRanking = User::getRanking('dare','year');
-                
-                $this->render('ranking',array('generalRanking'=>$generalRanking,'truthRanking'=>$truthRanking,'dareRanking'=>$dareRanking));
-	}
+        
 
 	public function actionError()
 	{
@@ -52,6 +32,23 @@ class SiteController extends MyController
 	        	$this->render('error', $error);
 	    }
 	}
+
+        
+	public function actionIndex()
+	{              
+                $generalRanking = MyFunctions::getRanking(NULL,'year');
+                $truthRanking = MyFunctions::getRanking('truth','year');
+                $dareRanking = MyFunctions::getRanking('dare','year');    
+                
+                $this->render('index',array('generalRanking'=>$generalRanking,'truthRanking'=>$truthRanking,'dareRanking'=>$dareRanking));
+	}
+
+
+	public function actionRanking()
+	{        
+                $this->render('ranking');
+	}
+        
         
 	public function actionContact()
 	{
@@ -69,48 +66,54 @@ class SiteController extends MyController
 		}
 		$this->render('contact',array('model'=>$model));
 	}
+        
 
 	public function actionVote()
 	{
-            if(isset($_POST['idTruth']) && isset($_POST['vote']))
-                if(!VotingDetail::model()->exists('idUser = :idUser AND idTruth = :idTruth',array(':idUser'=>Yii::app()->user->getId(),':idTruth'=>$_POST['idTruth'])))
-                {
-                    //We add one vote
-                    $modelTruth = Truth::model()->findByPk($_POST['idTruth']);             
-                    echo $modelTruth->addVote(Yii::app()->user->getId(), $_POST['vote']); 
+            if(isset($_POST['idTruth']))
+                $type = 'Truth';
+            if(isset($_POST['idDare']))
+                $type = 'Dare';
                     
-                    return;
-                }
-                else
-                {
-                    echo "no";
-                    return;
-                }
-            
-            if(isset($_POST['idDare']) && isset($_POST['vote']))
+            if(isset($type) && isset($_POST['vote']))
             {
-                if(!VotingDetail::model()->exists('idUser = :idUser AND idDare = :idDare',array(':idUser'=>Yii::app()->user->getId(),':idDare'=>$_POST['idDare'])))
+                if(!VotingDetail::model()->exists("idUser = :idUser AND id$type = :id$type",array(':idUser'=>Yii::app()->user->getId(),":id$type"=>$_POST["id$type"])))
                 {
-                    //We add one vote
-                    $modelDare = Dare::model()->findByPk($_POST['idDare']);
-                    echo $modelDare->addVote(Yii::app()->user->getId(), $_POST['vote']);  
-                    return;
+                    $model = $type::model()->findByPk($_POST["id$type"]);             
+                    echo $model->addVote(Yii::app()->user->getId(), $_POST['vote']);               
                 }
                 else
-                {
-                    echo "no";
-                    return;
-                }
+                    echo "Already Voted!";
+                return;
             }
             
             return "ERROR";
 	}
+        
+
+	public function actionVoteChallenge()
+	{      
+            if(isset($_POST['idChallenge']) && isset($_POST['vote']))
+            {
+                if(!VotingDetail::model()->exists("idUser = :idUser AND idChallenge = :idChallenge",array(':idUser'=>Yii::app()->user->getId(),":idChallenge"=>$_POST["idChallenge"])))
+                {
+                    $model = Challenge::model()->findByPk($_POST["idChallenge"]);             
+                    echo $model->addVote(Yii::app()->user->getId(), $_POST['vote']);               
+                }
+                else
+                    echo "Already Voted!";
+                return;
+            }
+            
+            return "ERROR";
+	}
+        
               
 	public function actionSubmitIdea()
 	{            
             $model = new SubmitIdeaForm;          
             $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
-            $truthOrDare = array('1'=>'Truth','2'=>'Dare');
+            $truthOrDare = array('Truth'=>'Truth','Dare'=>'Dare');
             $model->username = Yii::app()->user->name;
                         
             if(isset($_POST['SubmitIdeaForm']))
@@ -119,15 +122,13 @@ class SiteController extends MyController
 
                 if($model->validate())
                 {
-                    $modelTruthOrDare = $model->truthOrDare == '1' ? new Truth : new Dare;
+                    $type = strtolower($model->truthOrDare);
+                    $modelTruthOrDare = new $type;
                     $modelTruthOrDare->idCategory = $model->idCategory;
                     $modelTruthOrDare->idUser = Yii::app()->user->getId();
                     $modelTruthOrDare->dateSubmit = date('Y-m-d, H:i:s');
                     $modelTruthOrDare->anonymous = $model->anonymous;
-                    if($model->truthOrDare == '1')
-                        $modelTruthOrDare->truth = $model->idea;
-                    else
-                        $modelTruthOrDare->dare = $model->idea;
+                    $modelTruthOrDare->$type = $model->idea;
                     
                     if($modelTruthOrDare->save())
                         Yii::app()->user->setFlash('submitIdea','Your idea has been submited and will be displayed on the website after validation of the Truth Or Dare Team!');                 
@@ -137,55 +138,36 @@ class SiteController extends MyController
             } 
               $this->render('submitIdea',array('model'=>$model,'truthOrDare'=>$truthOrDare,'categories'=>$categories));   
 	}
-              
-	public function actionComment()
-	{     
-            $model = new Comment;
-            $model->idUser = Yii::app()->user->getId();
-            $model->submitDate = date('Y-m-d, H:i:s');
-            $model->idTruth = isset($_GET['idTruth'])? $_GET['idTruth'] : null;
-            $model->idDare = isset($_GET['idDare'])? $_GET['idDare'] : null;
-            $type = null;
-            
-            if(isset($_POST['Comment']))
-            {
-                $model->attributes = $_POST['Comment'];
-                
-                if($model->save())
-                    Yii::app()->user->setFlash('comment','Your comment has been submited!');                 
-                else
-                    Yii::app()->user->setFlash('comment','Sorry, there was a problem during the saving process..! Please try again...');                                      
-            }
-
-            if(isset($_GET['idTruth']) and !isset($_GET['idDare'])) 
-            { 
-                $comments = Comment::model()->with('user','user.scoreTruth','user.scoreDare')->findAllByAttributes(array('idTruth'=>$_GET['idTruth']));
-                $type = 'Truth';
-                $idTruthOrDare = $_GET['idTruth'];
-            }
-            
-            if(isset($_GET['idDare']) and !isset($_GET['idTruth'])) 
-            { 
-                $comments = Comment::model()->with('user','user.scoreTruth','user.scoreDare')->findAllByAttributes(array('idDare'=>$_GET['idDare']));
-                $type = 'Dare';
-                $idTruthOrDare = $_GET['idDare'];
-            }          
-            
-            $this->render('comment',array('model'=>$model,'comments'=>$comments,'idTruthOrDare'=>$idTruthOrDare,'type'=>$type));   
-	}
         
-	public function actionAdmin()
-	{
-                $modelTruth = new Truth;
-                $modelTruth->validated = 0;
-                $dataTruth = $modelTruth->findAll($modelTruth->getCriteria());
-                
-                $modelDare = new Dare;
-                $modelDare->validated = 0;
-                $dataDare = $modelDare->findAll($modelDare->getCriteria());
-                      
-		$this->render('admin',array('dataTruth'=>$dataTruth,'dataDare'=>$dataDare));
-	}
+        
+        public function actionComment()
+	{     
+            if(isset($_GET['idTruth']) || isset($_GET['idDare'])) 
+            {
+                $model = new Comment;
+                $model->idTruth = isset($_GET['idTruth'])? $_GET['idTruth'] : null;
+                $model->idDare = isset($_GET['idDare'])? $_GET['idDare'] : null;
+
+                if(isset($_POST['Comment']))
+                {
+                    $model->attributes = $_POST['Comment'];
+                    $model->idUser = Yii::app()->user->getId();
+                    $model->submitDate = date('Y-m-d, H:i:s');
+
+                    if($model->save())
+                        Yii::app()->user->setFlash('comment','Your comment has been submited!');                 
+                    else
+                        Yii::app()->user->setFlash('comment','Sorry, there was a problem during the saving process..! Please try again...');                                      
+                }      
+
+                $type = isset($_GET['idDare']) ? 'Dare' : 'Truth';
+                $comments = Comment::model()->with('user',"user.scoreTruth","user.scoreDare")->findAllByAttributes(array("id$type"=>$_GET["id$type"]));
+                $idTruthOrDare = $_GET["id$type"];   
+
+                $this->render('comment',array('model'=>$model,'comments'=>$comments,'idTruthOrDare'=>$idTruthOrDare,'type'=>$type));   	
+            }
+        }
+        
         
 	public function actionTest()
 	{  
@@ -195,6 +177,7 @@ class SiteController extends MyController
             
                 $this->render('test');
 	}
+        
         
         public function actionAddFavourite()
         {
@@ -216,6 +199,7 @@ class SiteController extends MyController
             }  
         }
         
+        
 	/**
 	 * This is the default 'index' action that is invoked
 	 * when an action is not explicitly requested by users.
@@ -225,6 +209,7 @@ class SiteController extends MyController
                 $this->render('events');
 	}
          
+        
 	/**
 	 * @return array action filters
 	 */
@@ -235,6 +220,7 @@ class SiteController extends MyController
 		);
 	}
 
+        
 	/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
@@ -248,7 +234,7 @@ class SiteController extends MyController
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('submitIdea','comment','addFavourite','vote'),
+				'actions'=>array('submitIdea','comment','addFavourite','vote','voteChallenge'),
 				'users'=>array('@'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions

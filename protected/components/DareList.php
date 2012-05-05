@@ -31,7 +31,7 @@ class DareList extends CWidget
     
     //Int - idCategory
     //Choose category of Dare to display
-    public $category;
+    public $idCategory;
     
     //Int
     //Total of Dares we want to display
@@ -44,14 +44,17 @@ class DareList extends CWidget
     public function run()
     {  
         //We check the level of the user before to allow him to see the content
-        if(isset($this->category) && isset($this->filterLevel) && $this->category > $this->filterLevel)
-            Yii::app()->user->setFlash('forbiddenLevel','Sorry, to have access to this category you need to register a coin which belongs to this category.');
+        if(isset($this->idCategory) && isset($this->filterLevel) && $this->idCategory != 0){
+            $levelCategory = Category::model()->findByPk($this->idCategory);
+            if($levelCategory->level > $this->filterLevel)
+                Yii::app()->user->setFlash('forbiddenLevel','Sorry, to have access to this category you need to register a coin which belongs to this category.');
+        }
         
         $model = new Dare;
         
         //Filter and order
-        if(isset($this->category) && $this->category != 0)
-            $model->category = $this->category;
+        if(isset($this->idCategory) && $this->idCategory != 0)
+            $model->idCategory = $this->idCategory;
         if(isset($this->idDare))
             $model->idDare = $this->idDare;
         $criteria = $model->getCriteria();   

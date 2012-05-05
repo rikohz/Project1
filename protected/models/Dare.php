@@ -21,10 +21,12 @@
  */
 class Dare extends CActiveRecord
 {
-        public $category;
-        public $order;
+        //Need for CdbCriterias
         public $maxDateSubmit;
         public $minDateSubmit;
+        public $levelMax;
+        
+        //Need to fetch results
         public $nbFavourite;
         public $nbComment;
         
@@ -69,7 +71,7 @@ class Dare extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'categories' => array(self::BELONGS_TO, 'Category', 'idCategory'),
+			'category' => array(self::BELONGS_TO, 'Category', 'idCategory','alias'=>'categoryDare'),
 			'user' => array(self::BELONGS_TO, 'User', 'idUser'),
 			'votingIps' => array(self::HAS_MANY, 'VotingIp', 'idDare'),
                         'comments'=> array(self::HAS_MANY,'Comment','idDare'),
@@ -120,13 +122,14 @@ class Dare extends CActiveRecord
 		));
 	}
         
-        
+        /**
+         * Returns CDbCriteria initiated using the Model instance params
+	 * @return CDbCriteria 
+	 */
         public function getCriteria($userFavourite=1)
         {
             $criteria = new CDbCriteria;
-            $criteria->condition = ' 1 ';
-            $criteria->with = array('user','categories','user.scoreTruth','user.scoreDare');
-            $criteria->order = isset($this->order)? "$this->order DESC " : " t.voteUp - t.voteDown DESC ";
+            $criteria->with = array('user','category','user.scoreTruth','user.scoreDare');
             $criteria->params = array();
             
             //If we want to get the user favourites Truth and Dares
@@ -144,30 +147,37 @@ class Dare extends CActiveRecord
                 ";
 
             if(isset($this->idUser)){
-                $criteria->condition .= ' AND t.idUser = :idUser ';
+                $criteria->addCondition(' t.idUser = :idUser ');
                 $criteria->params[":idUser"] = $this->idUser;
             }
             if(isset($this->idDare)){
-                $criteria->condition .= ' AND t.idDare = :idDare ';
+                $criteria->addCondition(' t.idDare = :idDare ');
                 $criteria->params[":idDare"] = $this->idDare;
             }
-            if(isset($this->category)){
-                $criteria->condition .= ' AND t.idCategory = :category ';
-                $criteria->params[":category"] = $this->category;
+            if(isset($this->idCategory)){
+                $criteria->addCondition(' t.idCategory = :idCategory ');
+                $criteria->params[":idCategory"] = $this->idCategory;
+            }
+            if(isset($this->levelMax)){
+                $criteria->addCondition(' categoryDare.level <= :levelMax ');
+                $criteria->params[":levelMax"] = $this->levelMax;
             }
             if(isset($this->minDateSubmit)){
-                $criteria->condition .= ' AND t.dateSubmit >= :minDateSubmit ';
+                $criteria->addCondition(' t.dateSubmit >= :minDateSubmit ');
                 $criteria->params[":minDateSubmit"] = $this->minDateSubmit;
             }
             if(isset($this->maxDateSubmit)){
-                $criteria->condition .= ' AND t.dateSubmit < :maxDateSubmit ';
+                $criteria->addCondition(' t.dateSubmit < :maxDateSubmit ');
                 $criteria->params[":maxDateSubmit"] = $this->maxDateSubmit;
             }
    
             return $criteria;
         }
         
-        
+        /**
+         * Returns the new score of the Truth
+	 * @return Int
+	 */
         public function addVote($idUser,$typeVote)
         {         
             //We add the vote up or down
@@ -183,21 +193,27 @@ class Dare extends CActiveRecord
             $votingDetail = new VotingDetail;
             $votingDetail->idUser = $idUser;
             $votingDetail->idDare = $this->idDare;
-            $votingDetail->voteDate = date('Y-m-d');
+            $votingDetail->voteDate = date('Y-m-d, H:i:s');
             $votingDetail->voteType = $typeVote == 'up'? 1 : 0;
             $votingDetail->save(); 
 
             return $this->voteUp - $this->voteDown;;
         }
         
+        /**
+         * Dynamic Scope for Level Filter
+	 */
         public function levelFilter($level=1)
         {
             $this->getDbCriteria()->mergeWith(array(
-                'condition'=>"categories.level<=$level",
+                'condition'=>"categoryDare.level <= $level",
             ));
             return $this;
         }
         
+        /**
+         * Dynamic Scope for Category Filter
+	 */
         public function category($category)
         {
             if(!($category === null))
@@ -207,6 +223,9 @@ class Dare extends CActiveRecord
             return $this;
         }
         
+        /**
+         * Dynamic Scope for selecting only one Dare
+	 */
         public function selectDare($idDare)
         {
             $this->getDbCriteria()->mergeWith(array(
@@ -215,11 +234,17 @@ class Dare extends CActiveRecord
             return $this;
         }
         
+        /**
+         * Scopes
+	 */
         public function scopes()
         {
             return array(
                 'validated'=>array(
                     'condition'=>'t.validated=1',
+                ),
+                'unvalidated'=>array(
+                    'condition'=>'t.validated=0',
                 )
             );
         }

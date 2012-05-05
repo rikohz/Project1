@@ -56,7 +56,8 @@ class City extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'idProvince0' => array(self::BELONGS_TO, 'Province', 'idProvince'),
+			'province' => array(self::BELONGS_TO, 'Province', 'idProvince'),
+			'districts' => array(self::HAS_MANY, 'District', 'idCity'),
 		);
 	}
 

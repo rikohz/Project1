@@ -240,47 +240,47 @@ div.search-form
 .boxTruthOrDare
 {
     height:50px; 
-    width:740px;
+    width:100%;
     border:1px dashed #29ABE2;
     margin-bottom: 30px;
  }
- 
-a.voteTruth
+
+ a.voteTruth, a.voteDare
 {
      height: 26px;
      width: 28px;
      display: inline-block;
+     margin-left: 10px;
 }
  
-a.voteDare
+a.voteTruthOrDare, a.voteChallenge
 {
      height: 26px;
      width: 28px;
      display: inline-block;
+     float:right;
 }
  
-div.addFavouriteTruth
+div.addFavouriteTruth, div.addFavouriteDare
 {
      background-image: url(/TruthOrDare/images/favourite.png);
      height: 24px;
      width: 24px;
      display: inline-block;
-}
-
-div.addFavouriteTruth:hover
-{
-    cursor:pointer;
+     margin-left: 10px;
 }
  
-div.addFavouriteDare
+div.addFavourite
 {
      background-image: url(/TruthOrDare/images/favourite.png);
      height: 24px;
      width: 24px;
      display: inline-block;
+     margin-right: 10px;
+     float:right;
 }
 
-div.addFavouriteDare:hover
+div.addFavourite:hover, div.addFavouriteTruth:hover, div.addFavouriteDare:hover
 {
     cursor:pointer;
 }

@@ -25,6 +25,7 @@ class SubmitIdeaForm extends CFormModel
 			// username and password are required
 			array('truthOrDare, idea, idCategory, anonymous', 'required'),
 			array('verifyCode', 'captcha', 'allowEmpty'=>!extension_loaded('gd')),
+                        array('truthOrDare','safe'),
 		);
 	}
 

@@ -13,9 +13,5 @@ if(Yii::app()->user->hasFlash('addFavouriteList')): ?>
 </div>
 <?php else: ?>
 
-<?php foreach ($model as $row){ ?>
-    <a href="index.php?favouriteList"
-    echo $row->name . '<br />';
-} ?>
 
 <?php endif; ?>

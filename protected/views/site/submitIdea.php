@@ -18,13 +18,9 @@
 </script>
 
 <?php if(Yii::app()->user->hasFlash('submitIdea')): ?>
-
-<div class="flash-success">
-	<?php 
-        echo Yii::app()->user->getFlash('submitIdea');          
-        ?>
-</div>
-
+    <div class="flash-success">
+            <?php echo Yii::app()->user->getFlash('submitIdea'); ?>
+    </div>
 <?php else: ?>
 
 <div class="form">

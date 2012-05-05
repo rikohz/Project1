@@ -49,7 +49,6 @@ class Comment extends CActiveRecord
 		return array(
 			array('idUser, comment, submitDate', 'required'),
 			array('idTruth, idDare', 'numerical', 'integerOnly'=>true),
-			array('idUser', 'length', 'max'=>20),
 			array('verifyCode', 'captcha', 'allowEmpty'=>!CCaptcha::checkRequirements()),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.

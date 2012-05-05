@@ -25,10 +25,7 @@ $(function() {
 
             success: function(html)
             {
-                if(html=='no')
-                    compteur.innerHTML = "You have already voted for this one!";
-                else
-                    compteur.innerHTML = html;
+                compteur.innerHTML = html;
                 parent.html(tampon);
             } 
         }); 
@@ -93,10 +90,10 @@ $(function() {
 <!--************-->
 <!-- Truth List -->
 <!--************-->
+<input type="hidden" value="<?php echo Yii::app()->user->isGuest; ?>" id="isGuestTruth" />
 <?php foreach ($datas as $row) { ?>
     
     <!-- Like and Dislike -->
-    <input type="hidden" value="<?php echo Yii::app()->user->isGuest; ?>" id="isGuestTruth" />
     <?php if($this->withVotes){ ?>
         <a href="" class="voteTruth" style="background-image: url(/TruthOrDare/images/iLike.png);" id="VT<?php echo $row['idTruth']; ?>" name="up">&nbsp;</a>
         <a href="" class="voteTruth" style="background-image: url(/TruthOrDare/images/iDislike.png);" id="VT<?php echo $row['idTruth']; ?>" name="down">&nbsp;</a>
@@ -119,11 +116,11 @@ $(function() {
     <?php } ?>
         
     <!-- Author informations and Date -->
-    <span style="float: right; margin-right:20px;">
+    <span style="float: right;">
         <?php echo $row->anonymous == 1 ? 'Anonymous' : $row->user->username; ?>&nbsp;&nbsp;-&nbsp;&nbsp;
-        <?php echo Yii::app()->user->getTruthRankName($row->user->scoreTruth === null? 0 : $row->user->scoreTruth->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
-        <?php echo Yii::app()->user->getDareRankName($row->user->scoreDare === null? 0 : $row->user->scoreDare->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
-        <?php echo $row->categories->category; ?>&nbsp;&nbsp;-&nbsp;&nbsp;
+        <?php echo Yii::app()->user->getTruthRankName($row->user->scoreTruth->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
+        <?php echo Yii::app()->user->getDareRankName($row->user->scoreDare->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
+        <?php echo $row->category->category; ?>&nbsp;&nbsp;-&nbsp;&nbsp;
         <?php echo Yii::app()->dateFormatter->format('yyyy-MM-dd',$row['dateSubmit']); ?>
     </span>
     

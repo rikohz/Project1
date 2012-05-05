@@ -3,14 +3,19 @@ $this->pageTitle = Yii::app()->name . ' - Comments';
 $this->breadcrumbs = $type == 'truth'? array('Truth'=>array('truth/truth'),'Comment') : array('Dares'=>array('dare/dare'),'Comment');
 ?>
 
+
+<!--***************-->
+<!-- Truth or Dare -->
+<!--***************-->  
+
 <?php 
     $this->widget($type.'List',
             array(
                 'idUser'=>Yii::app()->user->isGuest ? null : Yii::app()->user->getId(),
-                'filterLevel'=>Yii::app()->user->isGuest ? 2 : Yii::app()->user->getLevel(),
+                'filterLevel'=>Yii::app()->user->isGuest ? 1 : Yii::app()->user->getLevel(),
                 'withVotes'=>1,
                 'withFavourites'=>!Yii::app()->user->isGuest,
-                'withComments'=>1,
+                'withComments'=>0,
                 'id'.$type=>$idTruthOrDare
                 )); 
 ?>
@@ -26,14 +31,17 @@ $this->breadcrumbs = $type == 'truth'? array('Truth'=>array('truth/truth'),'Comm
 
 <?php foreach ($comments as $row) { ?>
     <?php echo $row->user->username; ?> - 
-    <?php echo Yii::app()->user->getTruthRankName($row->user->scoreTruth === null? 0 : $row->user->scoreTruth->score) . ' - ' . Yii::app()->user->getDareRankName($row->user->scoreTruth === null? 0 : $row->user->scoreDare->score); ?> - 
+    <?php echo Yii::app()->user->getTruthRankName($row->user->scoreTruth->score) . ' - ' . Yii::app()->user->getDareRankName($row->user->scoreDare->score); ?> - 
     <?php echo Yii::app()->dateFormatter->format('yyyy-MM-dd',$row->submitDate); ?>
     <div style="background-color: #B7D6E7;">
         <?php echo $row->comment; ?>
     </div>
     <br />
 <?php } ?>  
-    
+
+<!--****************-->
+<!-- Submit Comment -->
+<!--****************-->  
 <?php if(Yii::app()->user->hasFlash('comment')): ?>
     <div class="flash-success"><?php echo Yii::app()->user->getFlash('comment'); ?></div>
 <?php else: ?>

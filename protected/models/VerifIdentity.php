@@ -9,7 +9,7 @@
  */
 class VerifIdentity extends CActiveRecord
 {
-        public $serialNumber;
+
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @return VerifIdentity the static model class
@@ -37,7 +37,6 @@ class VerifIdentity extends CActiveRecord
 		return array(
 			array('serialNumber, verifCode', 'required'),
 			array('serialNumber, verifCode', 'length', 'max'=>12),
-			array('verifCode, serialNumber', 'length', 'max'=>20),
 			array('serialNumber, verifCode', 'numerical'),
 			array('serialNumber', 'exist','message' => "Sorry, this Serial Number does not exist",'className'=>'verifIdentity'),
 			array('serialNumber', 'verifyUnicitySerialNumber','on'=>'addCoin'),
@@ -89,14 +88,20 @@ class VerifIdentity extends CActiveRecord
 		));
 	}
         
-        
+        /**
+	 * Validation Rule
+         * Add error if the SerialNumber and the Password don't match
+	 */
         public function verifyCoinPassword($attribute,$params)
 	{
             if(!VerifIdentity::model()->exists('serialNumber = :serialNumber AND verifCode = :verifCode',array(':serialNumber'=>$this->serialNumber,':verifCode'=>$this->verifCode)))
                     $this->addError('verifCode','Incorrect validation Coin Password.');
 	}
         
-        //Verify that the Serial Number is not linked with any other person yet
+        /**
+	 * Validation Rule
+         * Add error if the SerialNumber is already linked with a person
+	 */
         public function verifyUnicitySerialNumber($attribute,$params)
 	{
             $verifIdentity = VerifIdentity::model()->findByPk($this->serialNumber);
