@@ -245,6 +245,9 @@ class Dare extends CActiveRecord
                 ),
                 'unvalidated'=>array(
                     'condition'=>'t.validated=0',
+                ),
+                'notAnonymous'=>array(
+                    'condition'=>'t.anonymous=0',
                 )
             );
         }

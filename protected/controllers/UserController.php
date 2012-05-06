@@ -127,10 +127,10 @@ class UserController extends MyController
             $this->render('mySettings');
         }
         
-	public function actionFavourite()
+	public function actionMyLists()
         {        
             $model = UserList::model()->findAllByAttributes(array('idUser'=>Yii::app()->user->getId()));
-            $this->render('favourite',array('model'=>$model));
+            $this->render('myLists',array('model'=>$model));
         }
      
 	public function actionChangePassword()
@@ -280,7 +280,7 @@ class UserController extends MyController
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('myPage', 'updateUser','changePassword', 'updateCoins','deleteCoin','updateProfilePicture','favourite','mySettings'),
+				'actions'=>array('myPage', 'updateUser','changePassword', 'updateCoins','deleteCoin','updateProfilePicture','myLists','mySettings'),
 				'users'=>array('@'),
 			),
 			array('deny',  // deny all users

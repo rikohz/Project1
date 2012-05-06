@@ -94,12 +94,12 @@ class UserWallWidget extends CWidget
 
         //Get Truths and add them to the Wall array()
         $truth = new Truth;
-        $truth->idUser = $this->idWallOwner;  
+        $truth->idUser = $this->idWallOwner;
         if(isset($this->filterLevel))
             $truth->levelMax = $this->filterLevel;
         $criteria = $truth->getCriteria(); 
         $criteria->order = 'dateSubmit DESC';
-        $truths = Truth::model()->findAll($criteria);
+        $truths = Truth::model()->notAnonymous()->findAll($criteria);
         foreach($truths as $row)
         {
             $wall[$i]['type'] = "Truth";
@@ -123,7 +123,7 @@ class UserWallWidget extends CWidget
             $dare->levelMax = $this->filterLevel;
         $criteria = $dare->getCriteria(); 
         $criteria->order = 'dateSubmit DESC';
-        $dares = Dare::model()->findAll($criteria);
+        $dares = Dare::model()->notAnonymous()->findAll($criteria);
         foreach($dares as $row)
         {
             $wall[$i]['type'] = "Dare";
