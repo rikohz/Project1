@@ -139,13 +139,13 @@ class MyFunctions {
        switch($type)
        {
            case 'truth':
-                $order = "(IFNULL(SVT.score,0) + IFNULL(SCT.score,0) + IFNULL(SVCT.score,0)) DESC";
+                $order = "(IFNULL(SVT.score,0) + IFNULL(SVCT.score,0)) DESC";
                 break;
            case 'dare':
                 $order = "(IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) DESC";
                 break;
            default:
-                $order = "(IFNULL(SVT.score,0) + IFNULL(SCT.score,0) + IFNULL(SVCT.score,0) + IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) DESC";
+                $order = "(IFNULL(SVT.score,0) + IFNULL(SVCT.score,0) + IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) DESC";
                 break;
        } 
 
@@ -156,12 +156,11 @@ class MyFunctions {
             SELECT 
               US.idUser,
               US.username,
-              (IFNULL(SVT.score,0) + IFNULL(SCT.score,0) + IFNULL(SVCT.score,0) + IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) AS score,
-              (IFNULL(SVT.score,0) + IFNULL(SCT.score,0) + IFNULL(SVCT.score,0)) AS scoreTruth,
+              (IFNULL(SVT.score,0) + IFNULL(SVCT.score,0) + IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) AS score,
+              (IFNULL(SVT.score,0) + IFNULL(SVCT.score,0)) AS scoreTruth,
               (IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) AS scoreDare,
               IFNULL(SVT.score,0) AS scoreVoteTruth,
               IFNULL(SVD.score,0) AS scoreVoteDare,
-              IFNULL(SCT.score,0) AS scoreChallengeTruth,
               IFNULL(SCD.score,0) AS scoreChallengeDare,
               IFNULL(SVCT.score,0) AS scoreVoteChallengeTruth,
               IFNULL(SVCD.score,0) AS scoreVoteChallengeDare
@@ -197,13 +196,6 @@ class MyFunctions {
                WHERE CA.level IN $level AND VD.voteDate >= :minDate
                GROUP BY CD.idUserTo) AS SVCD ON SVCD.idUserTo = US.idUser
             LEFT JOIN
-              (SELECT CT.idUserTo, SUM(5) AS score
-               FROM challenge CT
-               INNER JOIN truth TR ON TR.idTruth = CT.idTruth 
-               INNER JOIN category CA ON CA.idCategory = TR.idCategory
-               WHERE CA.level IN $level AND CT.success = 1 AND CT.finishDate >= :minDate
-               GROUP BY CT.idUserTo) AS SCT ON SCT.idUserTo = US.idUser
-            LEFT JOIN
               (SELECT CD.idUserTo, SUM(5) AS score
                FROM challenge CD
                INNER JOIN dare DA ON DA.idDare = CD.idDare 
@@ -236,6 +228,60 @@ class MyFunctions {
        $dayOfYear = $cDateFormatter->format("D",date('Y-m-d'));
        return date('Y-m-d',strtotime(date("Y-m-d") . " -" . ($dayOfYear) . "day"));
    }
+ 
+   public static function getTruthRankName($scoreTruth)
+   {
+        if($scoreTruth < 10)
+            return 'Baby Angel';
+        elseif($scoreTruth < 50)
+            return 'Little Angel';
+        elseif($scoreTruth < 200)
+            return 'Wise Angel';
+        elseif($scoreTruth < 500)
+            return 'White Angel';
+        elseif($scoreDare < 1000)
+            return 'Golden Angel';
+        elseif($scoreDare < 3000)
+            return 'Black Angel';
+        elseif($scoreDare < 10000)
+            return 'Black Angel';
+    }
+ 
+    public static function getDareRankName($scoreDare)
+    {
+        if($scoreDare < 10)
+            return 'Baby Imp';
+        elseif($scoreDare < 50)
+            return 'Little Imp';
+        elseif($scoreDare < 200)
+            return 'Naughty Evil';
+        elseif($scoreDare < 500)
+            return 'Red Evil';
+        elseif($scoreDare < 1000)
+            return 'Black Evil';
+        elseif($scoreDare < 3000)
+            return 'Black Evil';
+        elseif($scoreDare < 10000)
+            return 'Black Evil';
+    }
+ 
+    public static function getValueProgressBar($score)
+    {
+        if($score < 10)
+            return 100 * $score / 10;
+        elseif($score < 50)
+            return 100 * ($score - 10) / 40;
+        elseif($score < 200)
+            return 100 * ($score - 50) / 150;
+        elseif($score < 500)
+            return 100 * ($score - 200) / 300;
+        elseif($score < 500)
+            return 100 * ($score - 500) / 500;
+        elseif($score < 500)
+            return 100 * ($score - 1000) / 2000;
+        elseif($score < 500)
+            return 100 * ($score - 3000) / 7000;
+    }
    
 }
 

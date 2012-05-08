@@ -1,8 +1,13 @@
 <script type="text/javascript" src="<?php echo Yii::app()->request->baseUrl; ?>/script/jquery-ui-1.8.18.custom.min.js"></script>
+<script type="text/javascript" src="<?php echo Yii::app()->request->baseUrl; ?>/script/jquery.fancybox-1.3.4.pack.js"></script>
+<link rel="stylesheet" href="<?php echo Yii::app()->request->baseUrl; ?>/css/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
 <script type="text/javascript">
 $(function() {
 
-    //Vote Truth or Dare
+//<!--********************-->
+//<!-- Vote Truth or Dare -->
+//<!--********************-->
+
     $(".voteTruthOrDare").click(function() 
     { 
         if($("#isGuest").val() == 1)
@@ -34,7 +39,9 @@ $(function() {
         return false;
     });
     
-    //Vote Challenge
+//<!--****************-->
+//<!-- Vote Challenge -->
+//<!--****************-->
     $(".voteChallenge").click(function() 
     { 
         if($("#isGuest").val() == 1)
@@ -64,7 +71,10 @@ $(function() {
         return false;
     });
 
-    //Favourite Management
+//<!--**********************-->
+//<!-- Favourite Management -->
+//<!--**********************-->
+
     var idDare = null;
     var idTruth = null;
     $( "#dialog:ui-dialog" ).dialog( "destroy" );
@@ -122,6 +132,12 @@ $(function() {
   
 });
 
+//<!--***********************************-->
+//<!-- PictureBox for Challenge Pictures -->
+//<!--***********************************-->
+$(document).ready(function() {
+            $("a.challengePicture").fancybox();
+    });
 </script>
 
 <!--***************************-->
@@ -147,90 +163,94 @@ $(function() {
 <input type="hidden" value="<?php echo Yii::app()->user->isGuest; ?>" id="isGuest" />
 <div style="border:1px black solid;">
     <?php foreach($wall as $row): ?>
-        <!--******-->
-        <!-- Date -->
-        <!--******-->
-        <div style="text-align:right;"><?php echo $row['createDate']; ?></div>
-        <div>
-            <table width="100%" style="border:1px black solid;">
+        <div style="display: table; width:100%;">
+            <span style="width:50%; display:table-cell; vertical-align: bottom;">
+                <img style="margin: 0 5px 0 5px;" src="userImages/profilePicture_mini/<?php echo $row['userPicture']; ?>" width="32px" height="32px" />
+                <?php echo "<a href='index.php?r=user/userPage&idUser=" . $row['idDisplayUser'] . "'>" . $row['displayUsername'] . "</a>"; ?>
+                <?php echo "  (" . $row['rankTruth'] . " - " . $row['rankDare'] . ")" ; ?>
+            </span>
+            <span style="width:50%; display:table-cell; vertical-align: bottom; text-align: right;">
+
+                <!--*****************-->
+                <!-- Truths or Dares -->
+                <!--*****************-->
+                <?php if($row['type'] == "Truth" || $row['type'] == "Dare"): ?>
+                    <?php $ref = substr($row['type'],0,1) . $row['id']; ?>
+
+                    <!-- Like and Dislike -->
+                    <?php if($this->withVotes){ ?>
+                        <span style="float:right;" id="nbVote<?php echo $ref; ?>"><?php echo $row['vote']; ?></span>
+                        <a href="" class="voteTruthOrDare" style="background-image: url(/TruthOrDare/images/iDislike.png);" id="V<?php echo $ref; ?>" name="down">&nbsp;</a>
+                        <a href="" class="voteTruthOrDare" style="background-image: url(/TruthOrDare/images/iLike.png);" id="V<?php echo $ref; ?>" name="up">&nbsp;</a>
+                    <?php } ?>
+
+                    <!-- Comments -->
+                    <?php if($this->withComments){ ?>
+                        &nbsp;&nbsp;<a style="margin-right:10px; float:right;" href="index.php?r=site/comment&id<?php echo $row['type'] . "=" . $row['id']; ?>">See the <?php echo $row['nbComment']; ?> comments</a>
+                    <?php } ?>
+
+                    <!-- Favourite -->
+                    <?php if($this->withFavourites){?>
+                        <div tag='<?php echo $row['nbFavourite'] > 0 ? 'Chosen' : ''; ?>' 
+                             class='addFavourite' 
+                             <?php if($row['nbFavourite'] > 0){echo " style='background-image: url(/TruthOrDare/images/favouriteChosen.png);' ";} ?> 
+                             id='F<?php echo $ref; ?>'>&nbsp;
+                        </div>
+                    <?php } ?>
+                    <br />
+                    <br />
+                <?php endif; ?>
+
+                <!--************-->
+                <!-- Challenges -->
+                <!--************-->
+                <?php if($row['type'] == "ChallengeTruth" || $row['type'] == "ChallengeDare"): ?>
+                    <?php $ref = substr($row['type'],0,1) . $row['id']; ?>
+
+                    <!-- Like and Dislike -->
+                    <?php if($this->withVotes){ ?>
+                        <span style="float:right;" id="nbVote<?php echo $ref; ?>"><?php echo $row['vote']; ?></span>
+                        <a href="" class="voteChallenge" style="background-image: url(/TruthOrDare/images/iDislike.png);" id="V<?php echo $ref; ?>" name="down">&nbsp;</a>
+                        <a href="" class="voteChallenge" style="background-image: url(/TruthOrDare/images/iLike.png);" id="V<?php echo $ref; ?>" name="up">&nbsp;</a>
+                    <?php } ?>
+
+                    <!-- Comments -->
+                    <?php if($this->withComments){ ?>
+                        &nbsp;&nbsp;<a style="margin-right:10px; float:right;" href="index.php?r=site/challengeComment&id<?php echo $row['type'] . "=" . $row['id']; ?>">See the <?php echo $row['nbComment']; ?> comments</a>
+                    <?php } ?>
+                    <br />
+                    <br />
+                <?php endif; ?>
+            </span>
+        </div>
+        <div style="border:2px black solid; margin-bottom: 20px; margin-left:15px; padding: 5px;">
+            <table width="100px" style="margin:0;">
                 <tr>
-                    <th rowspan="2"><img src="userImages/profilePicture_mini/<?php echo $row['picture'] . '_mini' . $row['pictureExtension']; ?>" /></th>
-                    <td width="100%">
-                        <span style="float:left;">
+                    <?php if($row['type'] == "ChallengeDare" || $row['type'] == "ChallengeDare"): ?>
+                        <th rowspan="2" width="50px;"><a id="picture" class="challengePicture" title="<?php echo "Dare #" . $row['id'] . " (" . $row['category'] . "): " . $row['content'] ?>" href="userImages/challenge_original/<?php echo $row['pictureChallengeDare']; ?>"><img src="userImages/challenge_mini/<?php echo $row['pictureChallengeDareMini']; ?>" width="48px" height="48px" /></a></th>
+                    <?php endif; ?>
+                    <?php if($row['type'] !== "WallMessage" && $row['type'] !== "RankUpgrade"): ?>
+                        <td>
                             <b>
                                 <?php 
                                     switch($row['type']){
-                                        case 'WallMessage':
-                                            echo $row['displayUsername'] . " says:";
+                                        case 'ChallengeTruth' :
+                                            echo "Truth #" . $row['id'] . " (" . $row['category'] . ") accomplished : " . $row['content'];
                                             break;
-                                        case 'Challenge' :
-                                            echo $row['displayUsername'] . " has successfuly realized the following challenge (" . $row['category'] . ") :";
+                                        case 'ChallengeDare' :
+                                            echo "Dare #" . $row['id'] . " (" . $row['category'] . ") accomplished (+2 points):";
                                             break;
                                         case 'Truth' :
                                         case 'Dare' :
-                                            echo $row['displayUsername'] . " has submitted the following " . $row['type'] . " (" . $row['category'] . ") :";
+                                            echo "I just submitted this " . $row['type'] . " (" . $row['category'] . ") :";
                                             break;
                                     }
                                 ?>
                             </b>
-                        </span>
-                        <span style="float:right;">
-                            <!--*****************-->
-                            <!-- Truths or Dares -->
-                            <!--*****************-->
-                            <?php if($row['type'] == "Truth" || $row['type'] == "Dare"): ?>
-                                <?php $ref = substr($row['type'],0,1) . $row['id']; ?>
-
-                                <!-- Like and Dislike -->
-                                <?php if($this->withVotes){ ?>
-                                    <span style="float:right;" id="nbVote<?php echo $ref; ?>"><?php echo $row['vote']; ?></span>
-                                    <a href="" class="voteTruthOrDare" style="background-image: url(/TruthOrDare/images/iDislike.png);" id="V<?php echo $ref; ?>" name="down">&nbsp;</a>
-                                    <a href="" class="voteTruthOrDare" style="background-image: url(/TruthOrDare/images/iLike.png);" id="V<?php echo $ref; ?>" name="up">&nbsp;</a>
-                                <?php } ?>
-
-                                <!-- Comments -->
-                                <?php if($this->withComments){ ?>
-                                    &nbsp;&nbsp;<a style="margin-right:10px; float:right;" href="index.php?r=site/comment&id<?php echo $row['type'] . "=" . $row['id']; ?>">See the <?php echo $row['nbComment']; ?> comments</a>
-                                <?php } ?>
-
-                                <!-- Favourite -->
-                                <?php if($this->withFavourites){?>
-                                    <div tag='<?php echo $row['nbFavourite'] > 0 ? 'Chosen' : ''; ?>' 
-                                         class='addFavourite' 
-                                         <?php if($row['nbFavourite'] > 0){echo " style='background-image: url(/TruthOrDare/images/favouriteChosen.png);' ";} ?> 
-                                         id='F<?php echo $ref; ?>'>&nbsp;
-                                    </div>
-                                <?php } ?>
-                                <br />
-                                <br />
-                            <?php endif; ?>
-
-                            <!--************-->
-                            <!-- Challenges -->
-                            <!--************-->
-                            <?php if($row['type'] == "Challenge"): ?>
-                                <?php $ref = substr($row['type'],0,1) . $row['id']; ?>
-
-                                <!-- Like and Dislike -->
-                                <?php if($this->withVotes){ ?>
-                                    <span style="float:right;" id="nbVote<?php echo $ref; ?>"><?php echo $row['vote']; ?></span>
-                                    <a href="" class="voteChallenge" style="background-image: url(/TruthOrDare/images/iDislike.png);" id="V<?php echo $ref; ?>" name="down">&nbsp;</a>
-                                    <a href="" class="voteChallenge" style="background-image: url(/TruthOrDare/images/iLike.png);" id="V<?php echo $ref; ?>" name="up">&nbsp;</a>
-                                <?php } ?>
-                                    
-                                <!-- Comments -->
-                                <?php if($this->withComments){ ?>
-                                    &nbsp;&nbsp;<a style="margin-right:10px; float:right;" href="index.php?r=site/challengeComment&id<?php echo $row['type'] . "=" . $row['id']; ?>">See the <?php echo $row['nbComment']; ?> comments</a>
-                                <?php } ?>
-                                <br />
-                                <br />
-                            <?php endif; ?>
-                        </span>
-                    </td>
+                        </td>
+                    <?php endif; ?>
                 </tr>
-                <tr>
-                    <td><?php echo $row['content']; ?></td>
-                </tr>
+                <tr><td><?php echo $row['content']; ?></td></tr>
             </table>
         </div>
     <?php endforeach; ?>

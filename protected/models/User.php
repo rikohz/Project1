@@ -507,5 +507,32 @@ class User extends CActiveRecord
 
             return $result;
         }
+        
+        /**
+         * This function has to be called when a user just gained points
+         * The function will upgrade the user if necessary
+	 * @return 1 if upgraded otherwise 0
+	 */
+        public static function userRankUpgrade($idUser, $nbPoints, $type)
+        {
+            $result = 0;
+            $user = User::model()->with("score".$type)->findByPk($idUser);
+            $score = $type === 'Truth'? $user->scoreTruth->score : $user->scoreDare->score;
+            //$type = $type === 'Truth'? 0 : 1;
+            $ranks = Rank::model()->findAllByAttributes(array('type'=>$type === 'Truth'? 0 : 1));
+            foreach($ranks as $row)
+            {
+                if(($score - $row->points < 0) && ($score - $row->points + $nbPoints >= 0))
+                {
+                    $userRank = new Userrank;
+                    $userRank->idUser = $idUser;
+                    $userRank->createDate = date('Y-m-d, H:i:s');
+                    $userRank->idRank = $row->idRank;
+                    $userRank->save();
+                    $result = 1;
+                }
+            }  
+            return $result;
+        }
        
 }

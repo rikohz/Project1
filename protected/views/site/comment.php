@@ -31,7 +31,7 @@ $this->breadcrumbs = $type == 'truth'? array('Truth'=>array('truth/truth'),'Comm
 
 <?php foreach ($comments as $row) { ?>
     <?php echo $row->user->username; ?> - 
-    <?php echo Yii::app()->user->getTruthRankName($row->user->scoreTruth->score) . ' - ' . Yii::app()->user->getDareRankName($row->user->scoreDare->score); ?> - 
+    <?php echo MyFunctions::getTruthRankName($row->user->scoreTruth->score) . ' - ' . MyFunctions::getDareRankName($row->user->scoreDare->score); ?> - 
     <?php echo Yii::app()->dateFormatter->format('yyyy-MM-dd',$row->submitDate); ?>
     <div style="background-color: #B7D6E7;">
         <?php echo $row->comment; ?>

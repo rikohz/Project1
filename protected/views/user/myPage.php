@@ -1,3 +1,12 @@
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#progressBarTruth").progressbar({ value: <?php echo MyFunctions::getValueProgressBar($user->scoreTruth->score); ?> });
+  });
+$(document).ready(function() {
+    $("#progressBarDare").progressbar({ value: <?php echo MyFunctions::getValueProgressBar($user->scoreDare->score); ?> });
+  });
+</script>  
+
 <?php 
   @session_start();  
   
@@ -47,15 +56,19 @@
         <!-- Display User main informations -->
         <!--********************************-->
         <div style="height:150px; width:250px; border:1px black solid; float:left;">
-            <h1><?php echo Yii::app()->user->getName(); ?></h1>
-            <p>
+            <div style="font-size:2em; font-weight:bold;"><?php echo $user->username; ?></div>
+            <div>
                 <?php 
                     echo isset($user->province)? $user->province->name : "";
                     echo isset($user->city)? " - " . $user->city->name : "";
                     echo isset($user->district)? " - " . $user->district->name : "" ; 
                 ?>
-            </p>
-            <p><?php $myFunctions = new MyFunctions(); echo isset($user->birthDate) ? $myFunctions->getAge($user->birthDate) : ''; ?></p>
+            </div>
+            <div><?php $myFunctions = new MyFunctions(); echo isset($user->birthDate) ? $myFunctions->getAge($user->birthDate) : ''; ?></div>
+            <div style="margin-top:10px;"><?php echo MyFunctions::getTruthRankName($user->scoreTruth->score); ?></div>
+            <div id="progressBarTruth" style="width:100px; height:10px; margin-bottom:10px;"></div>
+            <div><?php echo MyFunctions::getDareRankName($user->scoreDare->score); ?></div>
+            <div id="progressBarDare" style="width:100px; height:10px;"></div>
         </div>
         
         <!--****************************-->

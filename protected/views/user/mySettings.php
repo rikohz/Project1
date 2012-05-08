@@ -8,14 +8,12 @@
 ?>
 
 <div>
-    <a href="index.php?r=user/updateUser">Update my informations</a>
+    <a href="index.php?r=user/myInormations">Update my informations</a>
     <br />
-    <a href="index.php?r=user/changePassword">Change my Password</a>
+    <a href="index.php?r=user/myPassword">Change my Password</a>
     <br />
-    <a href="index.php?r=user/updateCoins">Update my Coins</a>
+    <a href="index.php?r=user/myCoins">Update my Coins</a>
     <br />
-    <a href="index.php?r=user/updateProfilePicture">Update my Profile Picture</a>
-    <br />
-    <a href="index.php?r=user/favourite">My Favorites</a>
+    <a href="index.php?r=user/myProfilePicture">Update my Profile Picture</a>
 </div>
    

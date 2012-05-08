@@ -13,16 +13,19 @@
  * @property integer $voteUp
  * @property integer $voteDown
  * @property integer $private
- * @property string $picturePath
+ * @property string $pictureName
  * @property string $pictureExtension
  * @property string $createDate
  * @property string $finishDate
+ * @property string $answer
  *
  * The followings are the available model relations:
  * @property User $idUserFrom0
  * @property User $idUserTo0
  * @property Truth $idTruth0
  * @property Dare $idDare0
+ * @property Votingdetail[] $votingdetails
+
  */
 class Challenge extends CActiveRecord
 {
@@ -59,12 +62,12 @@ class Challenge extends CActiveRecord
 		return array(
 			array('idUserFrom, idUserTo, private, createDate', 'required'),
 			array('idUserFrom, idUserTo, idTruth, idDare, success, voteUp, voteDown, private', 'numerical', 'integerOnly'=>true),
-			array('picturePath', 'length', 'max'=>255),
+			array('pictureName', 'length', 'max'=>255),
 			array('pictureExtension', 'length', 'max'=>5),
-			array('finishDate', 'safe'),
+			array('finishDate, answer', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('idChallenge, idUserFrom, idUserTo, idTruth, idDare, success, voteUp, voteDown, private, picturePath, pictureExtension, createDate, finishDate', 'safe', 'on'=>'search'),
+			array('idChallenge, idUserFrom, idUserTo, idTruth, idDare, success, voteUp, voteDown, private, pictureName, pictureExtension, createDate, finishDate', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -80,6 +83,7 @@ class Challenge extends CActiveRecord
 			'userTo' => array(self::BELONGS_TO, 'User', 'idUserTo'),
 			'truth' => array(self::BELONGS_TO, 'Truth', 'idTruth'),
 			'dare' => array(self::BELONGS_TO, 'Dare', 'idDare'),
+                        'votingdetails' => array(self::HAS_MANY, 'Votingdetail', 'idChallenge'),
 		);
 	}
 
@@ -98,10 +102,11 @@ class Challenge extends CActiveRecord
 			'voteUp' => 'Vote Up',
 			'voteDown' => 'Vote Down',
 			'private' => 'Private',
-			'picturePath' => 'Picture Path',
+			'pictureName' => 'Picture Name',
 			'pictureExtension' => 'Picture Extension',
 			'createDate' => 'Create Date',
 			'finishDate' => 'Finish Date',
+                        'answer' => 'Answer',
 		);
 	}
 
@@ -125,10 +130,12 @@ class Challenge extends CActiveRecord
 		$criteria->compare('voteUp',$this->voteUp);
 		$criteria->compare('voteDown',$this->voteDown);
 		$criteria->compare('private',$this->private);
-		$criteria->compare('picturePath',$this->picturePath,true);
+		$criteria->compare('pictureName',$this->pictureName,true);
 		$criteria->compare('pictureExtension',$this->pictureExtension,true);
 		$criteria->compare('createDate',$this->createDate,true);
-		$criteria->compare('finishDate',$this->finishDate,true);
+		$criteria->compare('finishDate',$this->finishDate,true);		
+                $criteria->compare('answer',$this->answer,true);
+
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
@@ -141,6 +148,10 @@ class Challenge extends CActiveRecord
 	 */
         public function addVote($idUser,$typeVote)
         {         
+            //Upgrade owner of the Truth if necessary
+            $type = $this->idTruth === null ? 'Dare' : 'Truth';
+            User::userRankUpgrade($this->idUserTo,1,$type);
+            
             //We add the vote up or down
             if($typeVote == 'up')
                 $this->voteUp += 1;
@@ -157,7 +168,7 @@ class Challenge extends CActiveRecord
             $votingDetail->voteDate = date('Y-m-d, H:i:s');
             $votingDetail->voteType = $typeVote == 'up'? 1 : 0;
             $votingDetail->save(); 
-
+            
             return $this->voteUp - $this->voteDown;;
         }
 }

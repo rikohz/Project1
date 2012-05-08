@@ -179,7 +179,10 @@ class Dare extends CActiveRecord
 	 * @return Int
 	 */
         public function addVote($idUser,$typeVote)
-        {         
+        {                  
+            //Upgrade owner of the Dare if necessary
+            User::userRankUpgrade($this->idUser,1,'Dare');
+            
             //We add the vote up or down
             if($typeVote == 'up')
                 $this->voteUp += 1;
@@ -196,7 +199,7 @@ class Dare extends CActiveRecord
             $votingDetail->voteDate = date('Y-m-d, H:i:s');
             $votingDetail->voteType = $typeVote == 'up'? 1 : 0;
             $votingDetail->save(); 
-
+            
             return $this->voteUp - $this->voteDown;;
         }
         

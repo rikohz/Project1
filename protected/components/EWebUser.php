@@ -15,7 +15,9 @@ class EWebUser extends CWebUser{
     public $loginUrl=array('/user/login');
     public $defaultReturnUrl; 
     protected $_model;
-    protected $level;             
+    protected $level;    
+    protected $scoreTruth;   
+    protected $scoreDare;            
     
     public function getReturnUrl($defaultUrl=null)        
     {                
@@ -43,6 +45,30 @@ class EWebUser extends CWebUser{
         return $this->level;                  
     }
  
+    function getScoreTruth(){
+        if($this->scoreTruth === null)   
+        {
+            $user = $this->loadUser();
+            if($user)
+                $this->scoreTruth = $user->scoreTruth->score;
+            else
+                return false;
+        }
+        return $this->scoreTruth;  
+    }
+ 
+    function getScoreDare(){
+        if($this->scoreDare === null)   
+        {
+            $user = $this->loadUser();
+            if($user)
+                $this->scoreDare = $user->scoreDare->score;
+            else
+                return false;
+        }
+        return $this->scoreDare; 
+    }
+ 
     function getScoreVoteIdeas($type=null){
         $user = $this->loadUser();
         if($user)
@@ -67,28 +93,6 @@ class EWebUser extends CWebUser{
             return false;
     }
  
-    function getTruthRankName($scoreTruth){
-        if($scoreTruth < 10)
-            return 'Little Angel';
-        elseif($scoreTruth < 50)
-            return 'Wise Angel';
-        elseif($scoreTruth < 100)
-            return 'White Angel';
-        elseif($scoreTruth < 500)
-            return 'Golden Angel';
-    }
- 
-    function getDareRankName($scoreDare){
-        if($scoreDare < 10)
-            return 'Little Imp';
-        elseif($scoreDare < 50)
-            return 'Naughty Imp';
-        elseif($scoreDare < 100)
-            return 'Red Evil';
-        elseif($scoreDare < 500)
-            return 'Black Evil';
-    }
- 
     function email(){
         $user = $this->loadUser();
         if ($user)
@@ -100,7 +104,7 @@ class EWebUser extends CWebUser{
     protected function loadUser()
     {
         if ( $this->_model === null ) {
-                $this->_model = User::model()->findByPk( $this->id );
+                $this->_model = User::model()->with('scoreTruth','scoreDare')->findByPk($this->id);
         }
         return $this->_model;
     }

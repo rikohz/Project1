@@ -6,11 +6,26 @@ class UserController extends MyController
 //      <!--****************************-->
 //      <!-- Functions related to pages -->
 //      <!--****************************-->
+
+	public function actionLogin()
+	{
+		$model=new LoginForm;
+
+		// collect user input data
+		if(isset($_POST['LoginForm']))
+		{
+                    $model->attributes=$_POST['LoginForm'];
+                    if($model->validate() && $model->login())
+                            $this->redirect(Yii::app()->user->returnUrl);   
+		}
+		// display the login form
+		$this->render('login',array('model'=>$model));
+	}
     
 	public function actionMyPage()
 	{
             //User Score
-            $user = User::model()->with('province','city','district')->findByPk(Yii::app()->user->getId());
+            $user = User::model()->with('province','city','district','scoreTruth','scoreDare')->findByPk(Yii::app()->user->getId());
 
             //Get the scores of the User
             $score = array(
@@ -23,6 +38,29 @@ class UserController extends MyController
             );
              
             $this->render('myPage',array('user'=>$user,'score'=>$score));
+	}
+    
+	public function actionUserPage()
+	{
+            if(isset($_GET['idUser']))
+            {
+                //User Score
+                $user = User::model()->with('province','city','district','scoreTruth','scoreDare')->findByPk($_GET['idUser']);
+
+                //Get the scores of the User
+                $score = array(
+                    'scoreTruthVoteIdeas'=>$user->getScoreVoteIdeas('truth'),
+                    'scoreTruthChallenges'=>$user->getScoreChallenges('truth'),
+                    'scoreTruthVoteChallenges'=>$user->getScoreVoteChallenges('truth'),
+                    'scoreDareVoteIdeas'=>$user->getScoreVoteIdeas('dare'),
+                    'scoreDareChallenges'=>$user->getScoreChallenges('dare'),
+                    'scoreDareVoteChallenges'=>$user->getScoreVoteChallenges('dare')
+                );
+
+                $this->render('userPage',array('user'=>$user,'score'=>$score));
+            }
+            else
+                throw CHttpException(404,'Page not found');
 	}
         
 	public function actionRegister()
@@ -49,7 +87,7 @@ class UserController extends MyController
             $this->render('register',array('model'=>$model,'provinces'=>$provinces));
         }
         
-	public function actionUpdateProfilePicture()
+	public function actionMyProfilePicture()
         { 
             $model = User::model()->findByPk(Yii::app()->user->getId());
             $model->setScenario('updateProfilePicture');
@@ -63,7 +101,7 @@ class UserController extends MyController
             $this->render('updateProfilePicture',array('model'=>$model));
         }
         
-	public function actionUpdateUser()
+	public function actionMyInformations()
         {          
             $model = User::model()->findByPk(Yii::app()->user->getId());
             $model->conf_email = $model->email;
@@ -100,7 +138,7 @@ class UserController extends MyController
             $this->render('updateUser',array('model'=>$model,'provinces'=>$provinces,'cities'=>$cities,'districts'=>$districts));
         }
         
-	public function actionUpdateCoins()
+	public function actionMyCoins()
         {         
             $model = new VerifIdentity('addCoin');
             
@@ -133,7 +171,7 @@ class UserController extends MyController
             $this->render('myLists',array('model'=>$model));
         }
      
-	public function actionChangePassword()
+	public function actionMyPassword()
         {      
             $model = User::model()->findByPk(Yii::app()->user->getId());
             $model->setScenario('changePassword');
@@ -190,21 +228,6 @@ class UserController extends MyController
 	    	else
 	        	$this->render('error', $error);
 	    }
-	}
-
-	public function actionLogin()
-	{
-		$model=new LoginForm;
-
-		// collect user input data
-		if(isset($_POST['LoginForm']))
-		{
-                    $model->attributes=$_POST['LoginForm'];
-                    if($model->validate() && $model->login())
-                            $this->redirect(Yii::app()->user->returnUrl);   
-		}
-		// display the login form
-		$this->render('login',array('model'=>$model));
 	}
 
 	public function actionLogout()
@@ -280,7 +303,7 @@ class UserController extends MyController
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('myPage', 'updateUser','changePassword', 'updateCoins','deleteCoin','updateProfilePicture','myLists','mySettings'),
+				'actions'=>array('myPage', 'userPage', 'myInformations','myPassword', 'myCoins','deleteCoin','myProfilePicture','myLists','mySettings'),
 				'users'=>array('@'),
 			),
 			array('deny',  // deny all users

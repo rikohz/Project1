@@ -29,9 +29,16 @@ class UserWallWidget extends CWidget
     //Display or not the form to add Wall Messages
     public $withFormMessage = 1;
     
+    //Bit
+    //Display or not the informations from the Wall Owner friends
+    public $withFriendsInformations = 0;
+    
     public function run()
     {  
-        $wallOwner = User::model()->findByPk($this->idWallOwner);
+        $wallOwner = User::model()->with('scoreTruth','scoreDare')->findByPk($this->idWallOwner);
+        
+        $friends = Friend::model()->findAll(array('select' => 'idUser','condition'=>'(idUserFrom=:idUser or idUserTo=:idUser) and accepted=1','params'=>array(':idUser'=>$this->idWallOwner))); 
+        $friends = CHtml::listData($friends, 'idUser', 'code');
         
         //Add message to the Wall
         $model = new UserWall;
@@ -50,45 +57,59 @@ class UserWallWidget extends CWidget
         $criteria->addCondition('idUserTo = :idUser');
         $criteria->params = array(':idUser'=>$this->idWallOwner);
         $criteria->order = 'createDate DESC';
-        $wallComments = UserWall::model()->with('userFrom')->findAll($criteria);
+        $wallComments = UserWall::model()->with('userFrom','userFrom.scoreTruth','userFrom.scoreDare')->findAll($criteria);
 
         $wall = array(); $i = 0;
         foreach($wallComments as $row)
         {
             $wall[$i]['type'] = "WallMessage";
-            $wall[$i]['id'] = "$row->idUserWall";
+            $wall[$i]['id'] = $row->idUserWall;
             $wall[$i]['content'] = $row->content;
             $wall[$i]['createDate'] = $row->createDate;
-            $wall[$i]['picture'] = $row->userFrom->profilePicture;
-            $wall[$i]['pictureExtension'] = $row->userFrom->profilePictureExtension;
-            $wall[$i]['category'] = 0;
-            $wall[$i]['vote'] = 0;
-            $wall[$i]['nbFavourite'] = 0;
-            $wall[$i]['nbComment'] = 0;
+            $wall[$i]['userPicture'] = $row->userFrom->profilePicture . '_mini' . $row->userFrom->profilePictureExtension;
+            $wall[$i]['category'] = null;
+            $wall[$i]['vote'] = null;
+            $wall[$i]['nbFavourite'] = null;
+            $wall[$i]['nbComment'] = null;
+            $wall[$i]['idDisplayUser'] = $row->userFrom->idUser;
             $wall[$i]['displayUsername'] = $row->userFrom->username;
+            $wall[$i]['pictureChallengeDareMini'] = null;
+            $wall[$i]['pictureChallengeDare'] = null;
+            $wall[$i]['answerChallengeTruth'] = null;
+            $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($row->userFrom->scoreTruth->score);
+            $wall[$i]['rankDare'] = MyFunctions::getDareRankName($row->userFrom->scoreDare->score);
             $i++;   
         }
 
         //Get Challenges Notifications and add them to the Wall array()
         $criteria = new CDbCriteria;
         $criteria->addCondition('success = 1');
+        $criteria->addCondition('idUserTo = :idUser');
+        $criteria->params = array(':idUser'=>$this->idWallOwner);
         if(isset($this->filterLevel))
             $criteria->addCondition("(categoryTruth.level IS NOT NULL AND categoryTruth.level <= $this->filterLevel) OR (categoryDare.level IS NOT NULL AND categoryDare.level <= $this->filterLevel)");
-        $criteria->order = 'createDate DESC';
         $challenges = Challenge::model()->with('truth','dare','truth.category','dare.category')->findAll($criteria);
         foreach($challenges as $row)
         {
-            $wall[$i]['type'] = "Challenge";
-            $wall[$i]['id'] = "$row->idChallenge";
+            if($row->idTruth === null)
+                $wall[$i]['type'] = "ChallengeDare";
+            else
+                $wall[$i]['type'] = "ChallengeTruth";
+            $wall[$i]['id'] = $row->idChallenge;
             $wall[$i]['content'] = isset($row->truth) ? $row->truth->truth : $row->dare->dare;
             $wall[$i]['createDate'] = $row->createDate;
-            $wall[$i]['picture'] = $wallOwner->profilePicture;
-            $wall[$i]['pictureExtension'] = $wallOwner->profilePictureExtension;
+            $wall[$i]['userPicture'] = $wallOwner->profilePicture . '_mini' . $wallOwner->profilePictureExtension;
             $wall[$i]['category'] = isset($row->truth) ? $row->truth->category->category : $row->dare->category->category;
             $wall[$i]['vote'] = $row->voteUp - $row->voteDown;
             $wall[$i]['nbFavourite'] = 0;
             $wall[$i]['nbComment'] = 0;
+            $wall[$i]['idDisplayUser'] = $wallOwner->idUser;
             $wall[$i]['displayUsername'] = $wallOwner->username;
+            $wall[$i]['pictureChallengeDareMini'] = $row->pictureName . "_mini" . $row->pictureExtension;
+            $wall[$i]['pictureChallengeDare'] = $row->pictureName . "_original" . $row->pictureExtension;
+            $wall[$i]['answerChallengeTruth'] = $row->answer;
+            $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($wallOwner->scoreTruth->score);
+            $wall[$i]['rankDare'] = MyFunctions::getDareRankName($wallOwner->scoreDare->score);
             $i++;   
         }
 
@@ -98,21 +119,25 @@ class UserWallWidget extends CWidget
         if(isset($this->filterLevel))
             $truth->levelMax = $this->filterLevel;
         $criteria = $truth->getCriteria(); 
-        $criteria->order = 'dateSubmit DESC';
         $truths = Truth::model()->notAnonymous()->findAll($criteria);
         foreach($truths as $row)
         {
             $wall[$i]['type'] = "Truth";
-            $wall[$i]['id'] = "$row->idTruth";
+            $wall[$i]['id'] = $row->idTruth;
             $wall[$i]['content'] = $row->truth;
             $wall[$i]['createDate'] = $row->dateSubmit;
-            $wall[$i]['picture'] = $wallOwner->profilePicture;
-            $wall[$i]['pictureExtension'] = $wallOwner->profilePictureExtension;
+            $wall[$i]['userPicture'] = $wallOwner->profilePicture . '_mini' . $wallOwner->profilePictureExtension;
             $wall[$i]['category'] = $row->category->category;
             $wall[$i]['vote'] = $row->voteUp - $row->voteDown;
             $wall[$i]['nbFavourite'] = $row->nbFavourite;
             $wall[$i]['nbComment'] = $row->nbComment;
+            $wall[$i]['idDisplayUser'] = $wallOwner->idUser;
             $wall[$i]['displayUsername'] = $wallOwner->username;
+            $wall[$i]['pictureChallengeDareMini'] = null;
+            $wall[$i]['pictureChallengeDare'] = null;
+            $wall[$i]['answerChallengeTruth'] = null;
+            $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($wallOwner->scoreTruth->score);
+            $wall[$i]['rankDare'] = MyFunctions::getDareRankName($wallOwner->scoreDare->score);
             $i++;   
         }
 
@@ -121,22 +146,53 @@ class UserWallWidget extends CWidget
         $dare->idUser = $this->idWallOwner;  
         if(isset($this->filterLevel))
             $dare->levelMax = $this->filterLevel;
-        $criteria = $dare->getCriteria(); 
-        $criteria->order = 'dateSubmit DESC';
+        $criteria = $dare->getCriteria();
         $dares = Dare::model()->notAnonymous()->findAll($criteria);
         foreach($dares as $row)
         {
             $wall[$i]['type'] = "Dare";
-            $wall[$i]['id'] = "$row->idDare";
+            $wall[$i]['id'] = $row->idDare;
             $wall[$i]['content'] = $row->dare;
             $wall[$i]['createDate'] = $row->dateSubmit;
-            $wall[$i]['picture'] = $wallOwner->profilePicture;
-            $wall[$i]['pictureExtension'] = $wallOwner->profilePictureExtension;
+            $wall[$i]['userPicture'] = $wallOwner->profilePicture . '_mini' . $wallOwner->profilePictureExtension;
             $wall[$i]['category'] = $row->category->category;
             $wall[$i]['vote'] = $row->voteUp - $row->voteDown;
             $wall[$i]['nbFavourite'] = $row->nbFavourite;
             $wall[$i]['nbComment'] = $row->nbComment;
+            $wall[$i]['idDisplayUser'] = $wallOwner->idUser;
             $wall[$i]['displayUsername'] = $wallOwner->username;
+            $wall[$i]['pictureChallengeDareMini'] = null;
+            $wall[$i]['pictureChallengeDare'] = null;
+            $wall[$i]['answerChallengeTruth'] = null;
+            $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($wallOwner->scoreTruth->score);
+            $wall[$i]['rankDare'] = MyFunctions::getDareRankName($wallOwner->scoreDare->score);
+            $i++;   
+        }
+
+        //Get Ranks Upgrades of the user
+        $criteria = new CDbCriteria;
+        $criteria->addCondition('idUser = :idUser');
+        $criteria->params = array(':idUser'=>$this->idWallOwner);
+        $userUpgrades = Userrank::model()->with('rank')->findAll($criteria);
+
+        foreach($userUpgrades as $row)
+        {
+            $wall[$i]['type'] = "RankUpgrade";
+            $wall[$i]['id'] = null;
+            $wall[$i]['content'] = "You just got upgraded to <b>" . $row->rank->name . "</b>, congratulations!";
+            $wall[$i]['createDate'] = $row->createDate;
+            $wall[$i]['userPicture'] = $wallOwner->profilePicture . '_mini' . $wallOwner->profilePictureExtension;
+            $wall[$i]['category'] = null;
+            $wall[$i]['vote'] = null;
+            $wall[$i]['nbFavourite'] = null;
+            $wall[$i]['nbComment'] = null;
+            $wall[$i]['idDisplayUser'] = $wallOwner->idUser;
+            $wall[$i]['displayUsername'] = $wallOwner->username;
+            $wall[$i]['pictureChallengeDareMini'] = null;
+            $wall[$i]['pictureChallengeDare'] = null;
+            $wall[$i]['answerChallengeTruth'] = null;
+            $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($wallOwner->scoreTruth->score);
+            $wall[$i]['rankDare'] = MyFunctions::getDareRankName($wallOwner->scoreDare->score);
             $i++;   
         }
 

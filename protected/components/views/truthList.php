@@ -117,9 +117,9 @@ $(function() {
         
     <!-- Author informations and Date -->
     <span style="float: right;">
-        <?php echo $row->anonymous == 1 ? 'Anonymous' : $row->user->username; ?>&nbsp;&nbsp;-&nbsp;&nbsp;
-        <?php echo Yii::app()->user->getTruthRankName($row->user->scoreTruth->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
-        <?php echo Yii::app()->user->getDareRankName($row->user->scoreDare->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
+        <?php echo $row->anonymous == 1 ? 'Anonymous' : "<a href='index.php?r=user/userPage&idUser=" . $row->user->idUser . "'>" . $row->user->username . "</a>"; ?>&nbsp;&nbsp;-&nbsp;&nbsp;
+        <?php echo MyFunctions::getTruthRankName($row->user->scoreTruth->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
+        <?php echo MyFunctions::getDareRankName($row->user->scoreDare->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
         <?php echo $row->category->category; ?>&nbsp;&nbsp;-&nbsp;&nbsp;
         <?php echo Yii::app()->dateFormatter->format('yyyy-MM-dd',$row['dateSubmit']); ?>
     </span>

@@ -179,7 +179,10 @@ class Truth extends CActiveRecord
 	 * @return Int
 	 */
         public function addVote($idUser,$typeVote)
-        {         
+        {                
+            //Upgrade owner of the Truth if necessary
+            User::userRankUpgrade($this->idUser,1,'Truth');
+            
             //We add the vote up or down
             if($typeVote == 'up')
                 $this->voteUp += 1;
@@ -197,7 +200,7 @@ class Truth extends CActiveRecord
             //VoteType = 1 -> + 1 / VoteType = 0 -> -1
             $votingDetail->voteType = $typeVote == 'up'? 1 : 0;
             $votingDetail->save();                                                    
-                    
+            
             return $this->voteUp - $this->voteDown;;
         }
         
