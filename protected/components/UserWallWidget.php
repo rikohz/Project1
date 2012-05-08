@@ -37,9 +37,6 @@ class UserWallWidget extends CWidget
     {  
         $wallOwner = User::model()->with('scoreTruth','scoreDare')->findByPk($this->idWallOwner);
         
-        $friends = Friend::model()->findAll(array('select' => 'idUser','condition'=>'(idUserFrom=:idUser or idUserTo=:idUser) and accepted=1','params'=>array(':idUser'=>$this->idWallOwner))); 
-        $friends = CHtml::listData($friends, 'idUser', 'code');
-        
         //Add message to the Wall
         $model = new UserWall;
         if(isset($_POST['Userwall']))
