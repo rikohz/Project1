@@ -33,6 +33,10 @@ class TruthList extends CWidget
     //Choose category of Truth to display
     public $idCategory;
     
+    //Int - idUser
+    //Only display this user Truth
+    public $idUserFilter;
+    
     //Int
     //Total of Truths we want to display
     public $limit;
@@ -57,20 +61,22 @@ class TruthList extends CWidget
             $model->idCategory = $this->idCategory;
         if(isset($this->idTruth))
             $model->idTruth = $this->idTruth;
+        if(isset($this->idUserFilter))
+            $model->idUser = $this->idUserFilter;
         $criteria = $model->getCriteria();   
         if(isset($this->limit))
             $criteria->limit = $this->limit; 
         $criteria->order = isset($this->order)? "$this->order DESC " : " t.voteUp - t.voteDown DESC ";
 
         //Page manager
-        $count = $model->validated()->levelFilter($this->filterLevel)->count($criteria);
+        $count = $model->levelFilter($this->filterLevel)->count($criteria);
         //Use the $this->limit in Pagination otherwise $pages->pageSize to $criteria overriding the $criteria->limit 
         $pages = new CPagination(isset($this->limit) ? $this->limit : $count);
         $pages->pageSize = isset($this->limit) ? $this->limit : $this->itemsPerPage;
         $pages->applyLimit($criteria);
 
         //Get the datas
-        $datas = $model->validated()->levelFilter($this->filterLevel)->findAll($criteria);
+        $datas = $model->levelFilter($this->filterLevel)->findAll($criteria);
 
         //Manage favourites
         $modelUserList = new UserList;

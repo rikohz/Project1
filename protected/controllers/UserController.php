@@ -196,6 +196,36 @@ class UserController extends MyController
             $this->render('changePassword',array('model'=>$model));
         }
 
+	public function actionMyTruths()
+	{                
+            $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+      
+            //Filter and order criterias
+            if(isset($_GET['idCategory']))
+                Yii::app()->session['idCategory'] = $_GET['idCategory']; 
+            $idCategory = Yii::app()->session['idCategory'];
+            if(isset($_GET['order']))
+                Yii::app()->session['order'] = $_GET['order']; 
+            $order = Yii::app()->session['order'];
+            
+            $this->render('myTruths',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory));
+	}
+
+	public function actionMyDares()
+	{                
+            $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+      
+            //Filter and order criterias
+            if(isset($_GET['idCategory']))
+                Yii::app()->session['idCategory'] = $_GET['idCategory']; 
+            $idCategory = Yii::app()->session['idCategory'];
+            if(isset($_GET['order']))
+                Yii::app()->session['order'] = $_GET['order']; 
+            $order = Yii::app()->session['order'];
+            
+            $this->render('myDares',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory));
+	}
+
         
         
 //      <!--********************************-->
@@ -303,7 +333,7 @@ class UserController extends MyController
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('myPage', 'userPage', 'myInformations','myPassword', 'myCoins','deleteCoin','myProfilePicture','myLists','mySettings'),
+				'actions'=>array('myPage', 'userPage', 'myInformations','myPassword', 'myCoins','deleteCoin','myProfilePicture','myLists','mySettings','myTruths','myDares'),
 				'users'=>array('@'),
 			),
 			array('deny',  // deny all users

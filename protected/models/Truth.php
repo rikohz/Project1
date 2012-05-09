@@ -170,6 +170,8 @@ class Truth extends CActiveRecord
                 $criteria->addCondition(' t.dateSubmit < :maxDateSubmit ');
                 $criteria->params[":maxDateSubmit"] = $this->maxDateSubmit;
             }
+            //Truth validated
+            $criteria->addCondition(' t.validated = 1 ');
    
             return $criteria;
         }

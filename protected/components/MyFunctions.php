@@ -139,13 +139,13 @@ class MyFunctions {
        switch($type)
        {
            case 'truth':
-                $order = "(IFNULL(SVT.score,0) + IFNULL(SVCT.score,0)) DESC";
+                $order = "(IFNULL(SVT.score,0) + IFNULL(SCT.score,0) + IFNULL(SVCT.score,0)) DESC";
                 break;
            case 'dare':
                 $order = "(IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) DESC";
                 break;
            default:
-                $order = "(IFNULL(SVT.score,0) + IFNULL(SVCT.score,0) + IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) DESC";
+                $order = "(IFNULL(SVT.score,0) + IFNULL(SCT.score,0) + IFNULL(SVCT.score,0) + IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) DESC";
                 break;
        } 
 
@@ -195,6 +195,13 @@ class MyFunctions {
                INNER JOIN category CA ON CA.idCategory = DA.idCategory
                WHERE CA.level IN $level AND VD.voteDate >= :minDate
                GROUP BY CD.idUserTo) AS SVCD ON SVCD.idUserTo = US.idUser
+            LEFT JOIN
+              (SELECT CT.idUserTo, SUM(2) AS score
+               FROM challenge CT
+               INNER JOIN truth TR ON TR.idTruth = CT.idTruth 
+               INNER JOIN category CA ON CA.idCategory = TR.idCategory
+               WHERE CA.level IN $level AND CT.success = 1 AND CT.finishDate >= :minDate
+               GROUP BY CT.idUserTo) AS SCT ON SCT.idUserTo = US.idUser
             LEFT JOIN
               (SELECT CD.idUserTo, SUM(5) AS score
                FROM challenge CD

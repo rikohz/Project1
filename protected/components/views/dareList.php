@@ -94,11 +94,11 @@ $(function() {
 <?php foreach ($datas as $row) { ?>
     
     <!-- Like and Dislike -->
-    <?php if($this->withVotes){ ?>
+    <?php if(($this->withVotes) && ($row->user->idUser !== $this->idUser)){ ?>
         <a href="" class="voteDare" style="background-image: url(/TruthOrDare/images/iLike.png);" id="VD<?php echo $row['idDare']; ?>" name="up">&nbsp;</a>
         <a href="" class="voteDare" style="background-image: url(/TruthOrDare/images/iDislike.png);" id="VD<?php echo $row['idDare']; ?>" name="down">&nbsp;</a>
-        <span id="nbVoteD<?php echo $row['idDare']; ?>"><?php echo $row['voteUp'] - $row['voteDown']; ?></span>
     <?php } ?>
+    <span id="nbVoteD<?php echo $row['idDare']; ?>"><?php echo $row['voteUp'] - $row['voteDown']; ?></span>
 
     
     <!-- Favourite -->

@@ -170,6 +170,8 @@ class Dare extends CActiveRecord
                 $criteria->addCondition(' t.dateSubmit < :maxDateSubmit ');
                 $criteria->params[":maxDateSubmit"] = $this->maxDateSubmit;
             }
+            //Dare validated
+            $criteria->addCondition(' t.validated = 1 ');
    
             return $criteria;
         }

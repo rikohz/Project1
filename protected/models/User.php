@@ -359,10 +359,10 @@ class User extends CActiveRecord
            //Prepare Query
            $criteria = new CDbCriteria;
            $criteria->group = " t.idUserTo ";
-           $criteria->select = " SUM(CASE WHEN t.finishDate >= :minDateSubmitWeek THEN 5 END) AS scoreWeek, ";
-           $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitMonth THEN 5 END) AS scoreMonth, ";
-           $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitYear THEN 5 END) AS scoreYear, ";
-           $criteria->select .= " SUM(5) AS score ";
+           $criteria->select = " SUM(CASE WHEN t.finishDate >= :minDateSubmitWeek THEN (CASE WHEN t.idTruth IS NULL THEN 5 ELSE 2 END) END) AS scoreWeek, ";
+           $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitMonth THEN (CASE WHEN t.idTruth IS NULL THEN 5 ELSE 2 END) END) AS scoreMonth, ";
+           $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitYear THEN (CASE WHEN t.idTruth IS NULL THEN 5 ELSE 2 END) END) AS scoreYear, ";
+           $criteria->select .= " SUM(CASE WHEN t.idTruth IS NULL THEN 5 ELSE 2 END) AS score ";
            $criteria->addCondition(' t.success = 1 ');
            $criteria->addCondition(' t.idUserTo = :idUser ');
            if($type !== null)
@@ -533,6 +533,18 @@ class User extends CActiveRecord
                 }
             }  
             return $result;
+        }
+        
+        public function getIdFriends()
+        {
+            $friendsTo = Friend::model()->findAll(array('select' => 'idUserTo','condition'=>'idUserFrom=:idUser and accepted=1','params'=>array(':idUser'=>$this->idUser))); 
+            $friendsFrom = Friend::model()->findAll(array('select' => 'idUserFrom','condition'=>'idUserTo=:idUser and accepted=1','params'=>array(':idUser'=>$this->idUser))); 
+            $friends = array();
+            foreach($friendsTo as $row)
+                $friends[] = $row->idUserTo;
+            foreach($friendsFrom as $row)
+                $friends[] = $row->idUserFrom;
+            return $friends;
         }
        
 }
