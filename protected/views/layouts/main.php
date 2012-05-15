@@ -41,19 +41,19 @@
                 $isAdmin = !Yii::app()->user->isGuest ? Yii::app()->user->isAdmin() : false;
                 $this->widget('zii.widgets.CMenu',array(
 			'items'=>array(
-				array('label'=>'Home', 'url'=>array('/site/index')),
-				array('label'=>'Test', 'url'=>array('/site/test')),
-				array('label'=>'Dares', 'url'=>array('/dare/dare')),
-				array('label'=>'Truths', 'url'=>array('/truth/truth')),
-				array('label'=>'Submit Idea', 'url'=>array('/site/submitIdea')),
-				array('label'=>'Purchase Online', 'url'=>array('/site/purchaseOnline')),
-				array('label'=>'Events', 'url'=>array('/site/events')),
-				array('label'=>'About', 'url'=>array('/site/page', 'view'=>'about')),
-				array('label'=>'Contact', 'url'=>array('/site/contact')),
-				array('label'=>'My Page', 'url'=>array('/user/myPage'), 'visible'=>!Yii::app()->user->isGuest),
-				array('label'=>'Admin', 'url'=>array('/admin/admin'), 'visible'=>$isAdmin),
-				array('label'=>'Login', 'url'=>array('/user/login'), 'visible'=>Yii::app()->user->isGuest),
-				array('label'=>'Logout ('.Yii::app()->user->name.')', 'url'=>array('/user/logout'), 'visible'=>!Yii::app()->user->isGuest)
+				array('label'=>Yii::t('base','Home'), 'url'=>array('/site/index')),
+				array('label'=>Yii::t('base','Test'), 'url'=>array('/site/test')),
+				array('label'=>Yii::t('base','Dares'), 'url'=>array('/dare/dare')),
+				array('label'=>Yii::t('base','Truths'), 'url'=>array('/truth/truth')),
+				array('label'=>Yii::t('base','Submit Idea'), 'url'=>array('/site/submitIdea')),
+				array('label'=>Yii::t('base','Purchase Online'), 'url'=>array('/site/purchaseOnline')),
+				array('label'=>Yii::t('base','Events'), 'url'=>array('/site/events')),
+				array('label'=>Yii::t('base','About'), 'url'=>array('/site/page', 'view'=>'about')),
+				array('label'=>Yii::t('base','Contact'), 'url'=>array('/site/contact')),
+				array('label'=>Yii::t('base','My Page'), 'url'=>array('/user/myPage'), 'visible'=>!Yii::app()->user->isGuest),
+				array('label'=>Yii::t('base','Admin'), 'url'=>array('/admin/admin'), 'visible'=>$isAdmin),
+				array('label'=>Yii::t('base','Login'), 'url'=>array('/user/login'), 'visible'=>Yii::app()->user->isGuest),
+				array('label'=>Yii::t('base','Logout').' ('.Yii::app()->user->name.')', 'url'=>array('/user/logout'), 'visible'=>!Yii::app()->user->isGuest)
 			),
 		)); ?>
 	</div><!-- mainmenu -->
