@@ -8,10 +8,10 @@
 return array(
 	'basePath'=>dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
 	'name'=>'Truth Or Dare',
-        'sourceLanguage'=>'EN_US',
-        'language'=>'EN_US',
+        'sourceLanguage'=>'en_us',
+        'language'=>'en_us',
         'timeZone' => 'Asia/Hong_Kong',
-
+ 
 	// preloading 'log' component
 	'preload'=>array('log'),
 
@@ -36,7 +36,7 @@ return array(
 
 	// application components
 	'components'=>array(
-                'messages'=>array('class'=>'CDbMessageSource',),
+               // 'messages'=>array('class'=>'CDbMessageSource',),
                 'behaviors' => array('ApplicationConfigBehavior'),
 		'user'=>array(
                   // There you go, use our 'extended' version
