@@ -154,7 +154,8 @@ $(function() {
                 'filterLevel'=>Yii::app()->user->getLevel(),
                 'withVotes'=>1,
                 'withFavourites'=>1,
-                'withComments'=>1
+                'withComments'=>1,
+                'withSendChallenge'=>1
                 )); ?>
             
 

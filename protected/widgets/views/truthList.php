@@ -42,7 +42,7 @@ $(function() {
             modal: true,
             buttons: {
                     "Validate": function() {
-                            var idUserList = $( "#UserListTruth_name" ).val();
+                            var idUserList = $( "#FavouriteTruth_idUserList" ).val();
                             if ( idUserList !== '' ) {
                                     $.ajax({ 
                                       url: "index.php?r=site/addFavourite", 
@@ -71,6 +71,8 @@ $(function() {
     });
 
     //Send Challenge
+    $("#dialog-form-challenge-truth-sent").dialog({autoOpen: false});
+    $("#dialog-form-challenge-truth-alreadyexists").dialog({autoOpen: false});
     $( "#dialog-form-challenge-truth" ).dialog({
             autoOpen: false,
             height: 300,
@@ -80,28 +82,28 @@ $(function() {
             buttons: {
                     "Validate": function() {    
                         if ( $( "#ChallengeTruth_idUser" ).val() !== '' ) {
-                                $.ajax({ 
-                                  url: "index.php?r=user/sendChallenge", 
-                                  type: "POST", 
-                                  data: {
-                                      'idUser':$( "#ChallengeTruth_idUser" ).val(),
-                                      'private':document.getElementById('ChallengeTruth_private').checked,
-                                      'idTruth':idTruth,
-                                      'comment':$( "#ChallengeTruth_comment" ).val()
-                                  }, 
-                                  success: function(result){ 
-                                      if(result == "SUCCESS"){
-                                        $("#dialog-form-challenge-truth" ).dialog( "close" );
-                                        $("#ChallengeTruth_idUser").val('');
-                                        $("#ChallengeTruth_private").checked = 0;
-                                        $("#ChallengeTruth_comment").val('');
-                                        alert('Challenge sent');
-                                      }
-                                      if(result == "ALREADY_EXISTS"){
-                                        alert('This user already played this Challenge');
-                                      }
-                                    } 
-                                });  
+                            $.ajax({ 
+                              url: "index.php?r=user/sendChallenge", 
+                              type: "POST", 
+                              data: {
+                                  'idUser':$( "#ChallengeTruth_idUser" ).val(),
+                                  'private':document.getElementById('ChallengeTruth_private').checked,
+                                  'idTruth':idTruth,
+                                  'comment':$( "#ChallengeTruth_comment" ).val()
+                              }, 
+                              success: function(result){ 
+                                  if(result == "SUCCESS"){
+                                    $("#dialog-form-challenge-truth" ).dialog( "close" );
+                                    $("#ChallengeTruth_idUser").val('');
+                                    $("#ChallengeTruth_private").checked = 0;
+                                    $("#ChallengeTruth_comment").val('');
+                                    $("#dialog-form-challenge-truth-sent").dialog( "open" );
+                                  }
+                                  if(result == "ALREADY_EXISTS"){
+                                    $("#dialog-form-challenge-truth-alreadyexists").dialog( "open" );
+                                  }
+                                } 
+                            });  
                         }
                     },
                     Cancel: function() {
@@ -112,7 +114,8 @@ $(function() {
 
     $( ".challengeTruth" ).click(function() {
         idTruth = $(this).attr("id").substring(2, $(this).attr("id").length);
-        $( "#dialog-form-challenge-truth" ).dialog( "open" );   
+        $("#dialog-form-challenge-truth").dialog('option', 'title', 'Challenge Truth #'+idTruth); 
+        $("#dialog-form-challenge-truth").dialog( "open" );   
     });
   
 });
@@ -138,6 +141,12 @@ $(function() {
 <input type="hidden" value="<?php echo Yii::app()->user->isGuest; ?>" id="isGuestTruth" />
 <?php foreach ($datas as $row) { ?>
     
+    <!-- #Ref of Truth and category -->
+    <span>
+        <?php echo '#' . $row['idTruth']; ?>&nbsp;&nbsp;-&nbsp;&nbsp;
+        <?php echo $row->category->category; ?>
+    </span>
+
     <!-- Like and Dislike -->
     <?php if(($this->withVotes) && ($row->user->idUser !== $this->idUser)){ ?>
         <a href="" class="voteTruth" style="background-image: url(/TruthOrDare/images/iLike.png);" id="VT<?php echo $row['idTruth']; ?>" name="up">&nbsp;</a>
@@ -157,7 +166,7 @@ $(function() {
     
     <!-- Challenge -->
     <?php if($this->withSendChallenge){ ?>
-        &nbsp;&nbsp;<span class='challengeTruth' id='CT<?php echo $row->idTruth; ?>'>Challenge</span>
+        &nbsp;&nbsp;<span class='challengeTruth' id='CT<?php echo $row->idTruth; ?>'><a>Challenge</a></span>
     <?php } ?>
     
     <!-- Comments -->
@@ -167,7 +176,6 @@ $(function() {
         
     <!-- Author informations and Date -->
     <span style="float: right;">
-        <?php echo $row->category->category; ?>&nbsp;&nbsp;-&nbsp;&nbsp;
         <?php echo Yii::app()->dateFormatter->format('yyyy-MM-dd',$row['dateSubmit']); ?>
     </span>
     <?php if($this->withAuthorInformations){ ?>
@@ -205,11 +213,9 @@ $(function() {
 <?php if($this->withFavourites){ ?>
     <div id="dialog-form-favourite-truth" style="font-size:0.8em;" title="Choose your list">
         <?php 
-            $form=$this->beginWidget('CActiveForm', array('id'=>'addFavourite-truth-form'));
-            echo $form->dropDownList($modelUserList,'name', $userLists, array('prompt'=>'Select List','style'=>'width:330px;','id'=>'UserListTruth_name'));
+            echo CHtml::dropDownList('FavouriteTruth_UserLists',null, $userLists, array('prompt'=>'Select List','style'=>'width:330px;','id'=>'FavouriteTruth_idUserList'));
             if($userLists == null)
                 {echo "<br /><br /><p style='color:red;'>You haven't created any list yet, please click <a href='index.php?r=user/favourite'>here</a></p>";} 
-            $this->endWidget(); 
         ?>
     </div>
 <?php } ?>
@@ -229,6 +235,14 @@ $(function() {
         <?php if($friends == null): ?>
             <br /><br /><p style='color:red;'>You haven't any friend yet!</p> 
         <?php endif; ?>
+    </div>
+
+    <div id="dialog-form-challenge-truth-sent">
+        <p>Challenge sent!</p>
+    </div>
+
+    <div id="dialog-form-challenge-truth-alreadyexists">
+        <p>This user already played this challenge or has it in his/her waiting list!</p>
     </div>
 <?php } ?>
 

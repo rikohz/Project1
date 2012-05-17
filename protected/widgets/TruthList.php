@@ -96,7 +96,6 @@ class TruthList extends CWidget
         }
 
         //Manage send Challenges
-        $modelFriend = new Friend;
         $friends = CHtml::listData(array(),'idUser','username');
         if(!Yii::app()->user->isGuest) 
             $friends = CHtml::listData(Friend::getFriends(Yii::app()->user->getId()),'idUser','username');
@@ -105,9 +104,7 @@ class TruthList extends CWidget
             'datas'=>$datas,
             'pages'=>$pages, 
             'userLists'=>$userLists,
-            'modelUserList'=>$modelUserList, 
-            'friends'=>$friends,
-            'modelFriend'=>$modelFriend
+            'friends'=>$friends
             )
         );
     }

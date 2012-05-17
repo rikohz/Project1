@@ -120,7 +120,8 @@ $(document).ready(function() {
                 'withVotes'=>1,
                 'withFavourites'=>1,
                 'withComments'=>1,
-                'withFriendsInformations'=>1
+                'withFriendsInformations'=>1,
+                'withSendChallenge'=>1
                 )); ?>
             
 

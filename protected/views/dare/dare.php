@@ -38,6 +38,7 @@ $this->breadcrumbs=array(
             'order'=>$order,
             'withVotes'=>1,
             'withFavourites'=>!Yii::app()->user->isGuest,
-            'withComments'=>1
+            'withComments'=>1,
+            'withSendChallenge'=>!Yii::app()->user->isGuest
             )); ?>
 

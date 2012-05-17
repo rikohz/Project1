@@ -57,7 +57,8 @@
             'withVotes'=>1,
             'withFavourites'=>!Yii::app()->user->isGuest,
             'withComments'=>1,
-            'limit'=>3
+            'limit'=>3,
+            'withSendChallenge'=>!Yii::app()->user->isGuest
             )); ?>
 
 <!-- LIST 3 MOST RECENT TRUTHS -->

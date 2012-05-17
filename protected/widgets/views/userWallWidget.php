@@ -78,14 +78,14 @@ $(function() {
     var idDare = null;
     var idTruth = null;
     $( "#dialog:ui-dialog" ).dialog( "destroy" );
-    $( "#dialog-form" ).dialog({
+    $( "#dialog-form-favourite" ).dialog({
             autoOpen: false,
             height: 210,
             width: 350,
             modal: true,
             buttons: {
                     "Validate": function() {
-                            var idUserList = $( "#UserList_name" ).val();
+                            var idUserList = $( "#Favourite_idUserList" ).val();
                             var dataString = idTruth === null ? 'idDare=' + idDare : 'idTruth=' + idTruth;
                             dataString = dataString +  '&idUserList=' + idUserList
                             if ( idUserList !== '' ) {
@@ -119,15 +119,73 @@ $(function() {
             {
                 idTruth = $(this).attr("id").substring(2, $(this).attr("id").length);
                 idDare = null;
-                $( "#dialog-form" ).dialog( "open" );
+                $( "#dialog-form-favourite" ).dialog( "open" );
             }
             if($(this).attr("id").substring(0, 2) == "FD")
             {
                 idDare = $(this).attr("id").substring(2, $(this).attr("id").length);
                 idTruth = null;
-                $( "#dialog-form" ).dialog( "open" );
+                $( "#dialog-form-favourite" ).dialog( "open" );
             }
         }    
+    });
+
+    //Send Challenge
+    $("#dialog-form-challenge-sent").dialog({autoOpen: false});
+    $("#dialog-form-challenge-alreadyexists").dialog({autoOpen: false});
+    $( "#dialog-form-challenge" ).dialog({
+            autoOpen: false,
+            height: 300,
+            width: 350,
+            context: $(this), 
+            modal: true,
+            buttons: {
+                    "Validate": function() {    
+                        if ( $( "#Challenge_idUser" ).val() !== '' ) {
+                            var datastring = idTruth === null ? 'idDare='+idDare : 'idTruth='+idTruth;
+                            datastring = datastring + "&idUser="+$( "#Challenge_idUser" ).val();
+                            datastring = datastring + "&private="+document.getElementById('Challenge_private').checked;
+                            datastring = datastring + "&comment="+$( "#Challenge_comment" ).val(),
+                            $.ajax({ 
+                              url: "index.php?r=user/sendChallenge", 
+                              type: "POST", 
+                              data: datastring, 
+                              success: function(result){ 
+                                  if(result == "SUCCESS"){
+                                    $("#dialog-form-challenge" ).dialog( "close" );
+                                    $("#Challenge_idUser").val('');
+                                    $("#Challenge_private").checked = 0;
+                                    $("#Challenge_comment").val('');
+                                    $("#dialog-form-challenge-sent").dialog( "open" );
+                                  }
+                                  if(result == "ALREADY_EXISTS"){
+                                    $("#dialog-form-challenge-alreadyexists").dialog( "open" );
+                                  }
+                                } 
+                            });  
+                        }
+                    },
+                    Cancel: function() {
+                            $( this ).dialog( "close" );
+                    }
+            }
+    });
+
+    $( ".challenge" ).click(function() {
+        if($(this).attr("id").substring(0, 2) == "CT")
+        {
+            idTruth = $(this).attr("id").substring(2, $(this).attr("id").length);
+            idDare = null;
+            $("#dialog-form-challenge").dialog('option', 'title', 'Challenge Truth #'+idTruth); 
+            $("#dialog-form-challenge").dialog( "open" );  
+        }
+        if($(this).attr("id").substring(0, 2) == "CD")
+        {
+            idDare = $(this).attr("id").substring(2, $(this).attr("id").length);
+            idTruth = null;
+            $("#dialog-form-challenge").dialog('option', 'title', 'Challenge Dare #'+idDare); 
+            $("#dialog-form-challenge").dialog( "open" );  
+        }
     });
   
 });
@@ -197,6 +255,11 @@ $(document).ready(function() {
                              id='F<?php echo $ref; ?>'>&nbsp;
                         </div>
                     <?php } ?>
+    
+                    <!-- Challenge -->
+                    <?php if($this->withSendChallenge){ ?>
+                        &nbsp;&nbsp;<span><a class='challenge' id='C<?php echo $ref; ?>'>Challenge</a></span>
+                    <?php } ?>
                     <br />
                     <br />
                 <?php endif; ?>
@@ -242,7 +305,7 @@ $(document).ready(function() {
                                             break;
                                         case 'Truth' :
                                         case 'Dare' :
-                                            echo "I just submitted this " . $row['type'] . " (" . $row['category'] . ") :";
+                                            echo "I just submitted the " . $row['type'] . " #" . $row['id'] . " (" . $row['category'] . ") :";
                                             break;
                                     }
                                 ?>
@@ -259,14 +322,38 @@ $(document).ready(function() {
 <!--**************************************************-->
 <!-- Dialog box to choose which list to add favourite -->
 <!--**************************************************-->
-<?php if($this->withFavourites){ ?>
-    <div id="dialog-form" style="font-size:0.8em;" title="Choose your list">
+<?php if($this->withFavourites): ?>
+    <div id="dialog-form-favourite" style="font-size:0.8em;" title="Choose your list">
         <?php 
-            $form=$this->beginWidget('CActiveForm', array('id'=>'addFavourite-form'));
-            echo $form->dropDownList($modelUserList,'name', $userLists, array('prompt'=>'Select List','style'=>'width:330px;','id'=>'UserList_name'));
+            echo CHtml::dropDownList('Favourite_UserLists',null, $userLists, array('prompt'=>'Select List','style'=>'width:330px;','id'=>'Favourite_idUserList'));
             if($userLists == null)
                 {echo "<br /><br /><p style='color:red;'>You haven't created any list yet, please click <a href='index.php?r=user/favourite'>here</a></p>";} 
-            $this->endWidget(); 
         ?>
+    </div>
+<?php endif; ?>
+
+
+<!--******************************-->
+<!-- Dialog box to send Challenge -->
+<!--******************************-->
+<?php if($this->withSendChallenge){ ?>
+    <div id="dialog-form-challenge" style="font-size:0.8em;" title="Send Challenge">
+        <?php echo CHtml::dropDownList('FriendChallenge_username',null, $friends, array('prompt'=>'Select Friend','style'=>'width:330px;','id'=>'Challenge_idUser')); ?>
+        <br />
+        Comment:
+        <textarea rows="4" cols="50" id="Challenge_comment"></textarea>
+        <br />Private: 
+        <?php echo CHtml::checkBox('ChallengeFriend_private',false, array('id'=>'Challenge_private')); ?>
+        <?php if($friends == null): ?>
+            <br /><br /><p style='color:red;'>You haven't any friend yet!</p> 
+        <?php endif; ?>
+    </div>
+
+    <div id="dialog-form-challenge-sent">
+        <p>Challenge sent!</p>
+    </div>
+
+    <div id="dialog-form-challenge-alreadyexists">
+        <p>This user already played this challenge or has it in his/her waiting list!</p>
     </div>
 <?php } ?>

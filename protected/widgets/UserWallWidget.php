@@ -21,6 +21,10 @@ class UserWallWidget extends CWidget
     //Display the number of comments with a link
     public $withComments;
     
+    //Bit
+    //Allow user to send as a Challenge
+    public $withSendChallenge;
+    
     //Int 
     //Maximum level of Truth and Dare we can display
     public $filterLevel;
@@ -229,10 +233,21 @@ class UserWallWidget extends CWidget
             $userLists = CHtml::listData($userLists,'idUserList','name');
         }
 
+        //Manage send Challenges
+        $friends = CHtml::listData(array(),'idUser','username');
+        if(!Yii::app()->user->isGuest) 
+            $friends = CHtml::listData(Friend::getFriends(Yii::app()->user->getId()),'idUser','username');
+
         //Order the Wall array() by createDate DESC
         $wall = MyFunctions::arraySort($wall, 'createDate', 'DESC');
 
-        $this->render('userWallWidget',array('model'=>$model,'wall'=>$wall, 'userLists'=>$userLists,'modelUserList'=>$modelUserList));
+        $this->render('userWallWidget',array(
+            'model'=>$model,
+            'wall'=>$wall, 
+            'userLists'=>$userLists,
+            'friends'=>$friends
+            )
+        );
     }
 }
 ?>

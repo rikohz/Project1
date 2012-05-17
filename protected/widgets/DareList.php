@@ -22,6 +22,10 @@ class DareList extends CWidget
     public $withComments;
     
     //Bit
+    //Allow user to send as a Challenge
+    public $withSendChallenge;
+    
+    //Bit
     //Display the informations about the author od the Dare
     public $withAuthorInformations = 1;
     
@@ -91,7 +95,18 @@ class DareList extends CWidget
             $userLists = CHtml::listData($userLists,'idUserList','name');
         }
 
-        $this->render('dareList',array('datas'=>$datas,'pages'=>$pages, 'userLists'=>$userLists,'modelUserList'=>$modelUserList));
+        //Manage send Challenges
+        $friends = CHtml::listData(array(),'idUser','username');
+        if(!Yii::app()->user->isGuest) 
+            $friends = CHtml::listData(Friend::getFriends(Yii::app()->user->getId()),'idUser','username');
+
+        $this->render('dareList',array(
+            'datas'=>$datas,
+            'pages'=>$pages, 
+            'userLists'=>$userLists,
+            'friends'=>$friends
+            )
+        );
     }
 }
 ?>

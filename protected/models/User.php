@@ -439,27 +439,27 @@ class User extends CActiveRecord
             
             try
             {            
-                $this->save();
-             
-                //Get the idUser of the new User and specify it in the table verifIdentity
-                $idUser = Yii::app()->db->getLastInsertId();
-                $verifIdentity = VerifIdentity::model()->findByPk($this->serialNumber);
-                $verifIdentity->idUser = $idUser;
-                if(!$verifIdentity->save())
-                    throw new CDbException(null);     
+                if($this->save()){
+                    //Get the idUser of the new User and specify it in the table verifIdentity
+                    $idUser = Yii::app()->db->getLastInsertId();
+                    $verifIdentity = VerifIdentity::model()->findByPk($this->serialNumber);
+                    $verifIdentity->idUser = $idUser;
+                    if(!$verifIdentity->save())
+                        throw new CDbException(null);     
 
-                //Upload of Profile Picture
-                if($this->profilePicture !== "default")
-                {
-                    $result = $this->addPicture($this->profilePicture, $this->profilePictureExtension);
-                    if($result !== 1)
+                    //Upload of Profile Picture
+                    if($this->profilePicture !== "default")
                     {
-                        $this->addError('pictureUploader',$result);
-                        throw new CException(null);                 
+                        $result = $this->addPicture($this->profilePicture, $this->profilePictureExtension);
+                        if($result !== 1)
+                        {
+                            $this->addError('pictureUploader',$result);
+                            throw new CException(null);                 
+                        }
                     }
+
+                    $transaction->commit();
                 }
-                
-                $transaction->commit();
             }
             catch(Exception $e)
             {
