@@ -37,7 +37,7 @@ return array(
 
 	// application components
 	'components'=>array(
-                'messages'=>array('class'=>'CDbMessageSource',),
+                //'messages'=>array('class'=>'CDbMessageSource',),
                 'behaviors' => array('ApplicationConfigBehavior'),
 		'user'=>array(
                   // There you go, use our 'extended' version

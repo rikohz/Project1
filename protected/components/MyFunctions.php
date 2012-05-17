@@ -156,8 +156,8 @@ class MyFunctions {
             SELECT 
               US.idUser,
               US.username,
-              (IFNULL(SVT.score,0) + IFNULL(SVCT.score,0) + IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) AS score,
-              (IFNULL(SVT.score,0) + IFNULL(SVCT.score,0)) AS scoreTruth,
+              (IFNULL(SVT.score,0) + IFNULL(SCT.score,0) + IFNULL(SVCT.score,0) + IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) AS score,
+              (IFNULL(SVT.score,0) + IFNULL(SCT.score,0) + IFNULL(SVCT.score,0)) AS scoreTruth,
               (IFNULL(SVD.score,0) + IFNULL(SCD.score,0) + IFNULL(SVCD.score,0)) AS scoreDare,
               IFNULL(SVT.score,0) AS scoreVoteTruth,
               IFNULL(SVD.score,0) AS scoreVoteDare,
