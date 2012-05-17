@@ -9,6 +9,7 @@ function selectCategory(dropDownList)
 <?php
 $this->pageTitle=Yii::app()->name . ' - My Dares';
 $this->breadcrumbs=array(
+        'My Page'=>array('user/myPage'),
 	'My Dares',
 );
 ?>
@@ -38,6 +39,7 @@ $this->breadcrumbs=array(
             'order'=>$order,
             'withVotes'=>1,
             'withFavourites'=>1,
-            'withComments'=>1
+            'withComments'=>1,
+            'withAuthorInformations'=>0
             )); ?>
 

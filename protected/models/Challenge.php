@@ -9,7 +9,7 @@
  * @property integer $idUserTo
  * @property integer $idTruth
  * @property integer $idDare
- * @property integer $success
+ * @property integer $status
  * @property integer $voteUp
  * @property integer $voteDown
  * @property integer $private
@@ -18,6 +18,7 @@
  * @property string $createDate
  * @property string $finishDate
  * @property string $answer
+ * @property string $comment
  *
  * The followings are the available model relations:
  * @property User $idUserFrom0
@@ -33,6 +34,7 @@ class Challenge extends CActiveRecord
         public $scoreWeek;
         public $scoreMonth;
         public $scoreYear;
+        public $pictureUploader;
     
 	/**
 	 * Returns the static model of the specified AR class.
@@ -61,13 +63,13 @@ class Challenge extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('idUserFrom, idUserTo, private, createDate', 'required'),
-			array('idUserFrom, idUserTo, idTruth, idDare, success, voteUp, voteDown, private', 'numerical', 'integerOnly'=>true),
+			array('idUserFrom, idUserTo, idTruth, idDare, status, voteUp, voteDown, private', 'numerical', 'integerOnly'=>true),
 			array('pictureName', 'length', 'max'=>255),
 			array('pictureExtension', 'length', 'max'=>5),
 			array('finishDate, answer', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('idChallenge, idUserFrom, idUserTo, idTruth, idDare, success, voteUp, voteDown, private, pictureName, pictureExtension, createDate, finishDate', 'safe', 'on'=>'search'),
+			array('idChallenge, idUserFrom, idUserTo, idTruth, idDare, status, voteUp, voteDown, private, pictureName, pictureExtension, createDate, finishDate', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -84,6 +86,7 @@ class Challenge extends CActiveRecord
 			'truth' => array(self::BELONGS_TO, 'Truth', 'idTruth'),
 			'dare' => array(self::BELONGS_TO, 'Dare', 'idDare'),
                         'votingdetails' => array(self::HAS_MANY, 'Votingdetail', 'idChallenge'),
+			'levelUserFrom' => array(self::HAS_ONE, 'Verifidentity', 'idUser','on'=>'levelUserFrom.serialNumber = (SELECT serialNumber FROM verifidentity WHERE idUser=t.idUserFrom ORDER BY level DESC LIMIT 1)'),
 		);
 	}
 
@@ -98,7 +101,7 @@ class Challenge extends CActiveRecord
 			'idUserTo' => 'Id User To',
 			'idTruth' => 'Id Truth',
 			'idDare' => 'Id Dare',
-			'success' => 'Success',
+			'status' => 'Status',
 			'voteUp' => 'Vote Up',
 			'voteDown' => 'Vote Down',
 			'private' => 'Private',
@@ -107,6 +110,7 @@ class Challenge extends CActiveRecord
 			'createDate' => 'Create Date',
 			'finishDate' => 'Finish Date',
                         'answer' => 'Answer',
+                        'comment' => 'Comment',
 		);
 	}
 
@@ -126,7 +130,7 @@ class Challenge extends CActiveRecord
 		$criteria->compare('idUserTo',$this->idUserTo);
 		$criteria->compare('idTruth',$this->idTruth);
 		$criteria->compare('idDare',$this->idDare);
-		$criteria->compare('success',$this->success);
+		$criteria->compare('status',$this->status);
 		$criteria->compare('voteUp',$this->voteUp);
 		$criteria->compare('voteDown',$this->voteDown);
 		$criteria->compare('private',$this->private);
@@ -134,7 +138,8 @@ class Challenge extends CActiveRecord
 		$criteria->compare('pictureExtension',$this->pictureExtension,true);
 		$criteria->compare('createDate',$this->createDate,true);
 		$criteria->compare('finishDate',$this->finishDate,true);		
-                $criteria->compare('answer',$this->answer,true);
+                $criteria->compare('answer',$this->answer,true);	
+                $criteria->compare('comment',$this->comment,true);
 
 
 		return new CActiveDataProvider($this, array(
@@ -170,5 +175,93 @@ class Challenge extends CActiveRecord
             $votingDetail->save(); 
             
             return $this->voteUp - $this->voteDown;;
+        }
+
+        /**
+	 * Add the Dare Challenge picture in the 2 different sizes folders
+	 * @return True or the Error Message
+	 */
+        public function addPicture($pictureName, $extension)
+        {
+            
+            $allowedExtensions = array(".gif",".jpg",".png",".jpeg");
+
+            $fromFile =  $_SERVER['DOCUMENT_ROOT'] . "TruthOrDare/userImages/temp/" . $pictureName . $extension;
+            $toFileOriginal = $_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/challenge_original/" . $pictureName . '_original' . $extension;
+            $toFileMini = $_SERVER['DOCUMENT_ROOT']. "TruthOrDare/userImages/challenge_mini/" . $pictureName . '_mini' . $extension;
+
+            if (!in_array(strtolower($extension),$allowedExtensions))
+                $result = "Wrong format of file - Only JPG/PNG/GIF are allowed";
+            else if (!(filesize($fromFile) <= (1024 * 1024 * 2)))
+                $result = "File too heavy - 2MB maximum";
+            else
+            {       
+                //We keep 2 pictures, _original _mini
+                //Original Picture
+                if (rename($fromFile,$toFileOriginal))
+                {
+                    //Profile Picture (max width:150px)
+                    $image = Yii::app()->image->load($toFileOriginal);
+                    
+                    //Thumbnail
+                    if($image->__get('width') > $image->__get('height'))
+                        $image->resize(50, 50, Image::HEIGHT);
+                    else
+                        $image->resize(50, 50, Image::WIDTH);
+                    $image->crop(50, 50);
+                    $image->save($toFileMini);
+                    
+                    $result = 1;               
+                }
+                else
+                    $result = "Problem during file transfer";     
+            }
+            return $result;
+        }
+
+        
+	/**
+	 * Return CActiveRecord with Challenges 
+	 * @return CActiveRecord
+	 */
+        public static function getChallenges($idUser, $idCategory=null, $idGender=null, $idType=null, $idStatus=null, $minDateChallenge=null, $idPrivateStatus=null, $idUserFrom=null)
+        {
+            $criteria = new CDbCriteria;           
+            
+            //Get users the current user added as Friends
+            $criteria->condition = "t.idUserTo=:idUser AND t.status <> 2";
+            $criteria->params = array(':idUser'=>$idUser);
+            
+            if($idCategory !== '' && $idCategory !== null){
+                $criteria->addCondition("categoryTruth.idCategory = :idCategory OR categoryDare.idCategory = :idCategory");
+                $criteria->params[':idCategory'] = $idCategory;
+            }
+            if($idGender !== '' && $idGender !== null){
+                $criteria->addCondition("userFrom.gender = :gender");
+                $criteria->params[':gender'] = $idGender;
+            }
+            if($idType !== '' && $idType !== null){
+                $criteria->addCondition("t.id$idType IS NOT NULL");
+            }
+            if($idStatus !== '' && $idStatus !== null){
+                $criteria->addCondition("t.status = :idStatus");
+                $criteria->params[':idStatus'] = $idStatus;
+            }
+            if($minDateChallenge !== '' && $minDateChallenge !== null){
+                $criteria->addCondition("IFNULL(t.finishDate,t.createDate) >= :minDateChallenge");
+                $criteria->params[':minDateChallenge'] = $minDateChallenge;
+            }
+            if($idPrivateStatus !== '' && $idPrivateStatus !== null){
+                $criteria->addCondition("t.private = :idPrivateStatus");
+                $criteria->params[':idPrivateStatus'] = $idPrivateStatus;
+            }
+            if($idUserFrom !== '' && $idUserFrom !== null){
+                $criteria->addCondition("t.idUserFrom = :idUserFrom");
+                $criteria->params[':idUserFrom'] = $idUserFrom;
+            }
+            
+            $challenges = Challenge::model()->with('truth','dare','truth.category','dare.category','userFrom','levelUserFrom')->findAll($criteria); 
+            
+            return $challenges;
         }
 }

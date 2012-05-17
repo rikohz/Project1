@@ -53,7 +53,7 @@
 				array('label'=>Yii::t('base','My Page'), 'url'=>array('/user/myPage'), 'visible'=>!Yii::app()->user->isGuest),
 				array('label'=>Yii::t('base','Admin'), 'url'=>array('/admin/admin'), 'visible'=>$isAdmin),
 				array('label'=>Yii::t('base','Login'), 'url'=>array('/user/login'), 'visible'=>Yii::app()->user->isGuest),
-				array('label'=>Yii::t('base','Logout').' ('.Yii::app()->user->name.')', 'url'=>array('/user/logout'), 'visible'=>!Yii::app()->user->isGuest)
+				array('label'=>Yii::t('base','Logout') . ' ('.Yii::app()->user->name.')', 'url'=>array('/user/logout'), 'visible'=>!Yii::app()->user->isGuest)
 			),
 		)); ?>
 	</div><!-- mainmenu -->

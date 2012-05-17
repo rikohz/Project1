@@ -129,7 +129,9 @@ class User extends CActiveRecord
                         'district' => array(self::BELONGS_TO, 'District', 'idDistrict'),
 			'province' => array(self::BELONGS_TO, 'Province', 'idProvince'),
 			'city' => array(self::BELONGS_TO, 'City', 'idCity'),
-
+			'level' => array(self::HAS_ONE, 'Verifidentity', 'idUser','on'=>'level.serialNumber = (SELECT serialNumber FROM verifidentity WHERE idUser=user.idUser ORDER BY level DESC LIMIT 1)'),
+			'levelUserFrom' => array(self::HAS_ONE, 'Verifidentity', 'idUser','on'=>'levelUserFrom.serialNumber = (SELECT serialNumber FROM verifidentity WHERE idUser=levelUserFrom.idUser ORDER BY level DESC LIMIT 1)'),
+			'levelUserTo' => array(self::HAS_ONE, 'Verifidentity', 'idUser','on'=>'levelUserTo.serialNumber = (SELECT serialNumber FROM verifidentity WHERE idUser=levelUserTo.idUser ORDER BY level DESC LIMIT 1)'),
 		);
 	}
 
@@ -363,7 +365,7 @@ class User extends CActiveRecord
            $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitMonth THEN (CASE WHEN t.idTruth IS NULL THEN 5 ELSE 2 END) END) AS scoreMonth, ";
            $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitYear THEN (CASE WHEN t.idTruth IS NULL THEN 5 ELSE 2 END) END) AS scoreYear, ";
            $criteria->select .= " SUM(CASE WHEN t.idTruth IS NULL THEN 5 ELSE 2 END) AS score ";
-           $criteria->addCondition(' t.success = 1 ');
+           $criteria->addCondition(' t.status = 1 ');
            $criteria->addCondition(' t.idUserTo = :idUser ');
            if($type !== null)
                 $criteria->addCondition(" t.id$type IS NOT NULL ");
@@ -399,7 +401,7 @@ class User extends CActiveRecord
            $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitMonth THEN t.voteUp - t.voteDown END) AS scoreMonth, ";
            $criteria->select .= " SUM(CASE WHEN t.finishDate >= :minDateSubmitYear THEN t.voteUp - t.voteDown END) AS scoreYear, ";
            $criteria->select .= " SUM(t.voteUp - t.voteDown) AS score ";
-           $criteria->addCondition(' t.success = 1 ');
+           $criteria->addCondition(' t.status = 1 ');
            $criteria->addCondition(' t.idUserTo = :idUser ');
            if($type !== null)
                 $criteria->addCondition(" t.id$type IS NOT NULL ");

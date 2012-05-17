@@ -200,14 +200,14 @@ class MyFunctions {
                FROM challenge CT
                INNER JOIN truth TR ON TR.idTruth = CT.idTruth 
                INNER JOIN category CA ON CA.idCategory = TR.idCategory
-               WHERE CA.level IN $level AND CT.success = 1 AND CT.finishDate >= :minDate
+               WHERE CA.level IN $level AND CT.status = 1 AND CT.finishDate >= :minDate
                GROUP BY CT.idUserTo) AS SCT ON SCT.idUserTo = US.idUser
             LEFT JOIN
               (SELECT CD.idUserTo, SUM(5) AS score
                FROM challenge CD
                INNER JOIN dare DA ON DA.idDare = CD.idDare 
                INNER JOIN category CA ON CA.idCategory = DA.idCategory
-               WHERE CA.level IN $level AND CD.success = 1 AND CD.finishDate >= :minDate
+               WHERE CA.level IN $level AND CD.status = 1 AND CD.finishDate >= :minDate
                GROUP BY CD.idUserTo) AS SCD ON SCD.idUserTo = US.idUser
             WHERE US.gender IN $gender
             ORDER BY $order

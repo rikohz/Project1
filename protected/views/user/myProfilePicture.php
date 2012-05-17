@@ -12,7 +12,7 @@ $(document).ready(function(){
 	var thumb = $('img#thumb');
         
 	new AjaxUpload('User_pictureUploader', {
-		action: '/TruthOrDare/script/upload.php',
+		action: '/TruthOrDare/script/uploadPicture.php',
 		name: 'userfile',
 		onSubmit: function(file, extension) {
 			$('div.preview').addClass('loading');

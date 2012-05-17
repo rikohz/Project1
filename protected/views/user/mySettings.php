@@ -3,6 +3,7 @@
   
   $this->pageTitle=Yii::app()->name . ' - My Settings';
   $this->breadcrumbs=array(
+        'My Page'=>array('user/myPage'),
 	'My Settings',
   );
 ?>

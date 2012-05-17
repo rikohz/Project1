@@ -11,7 +11,7 @@ return array(
         'sourceLanguage'=>'en_us',
         'language'=>'en_us',
         'timeZone' => 'Asia/Hong_Kong',
- 
+
 	// preloading 'log' component
 	'preload'=>array('log'),
 
@@ -20,6 +20,7 @@ return array(
 		'application.models.*',
 		'application.components.*',
                 'application.helpers.*',
+                'application.widgets.*',
 	),
 
 	'modules'=>array(
@@ -36,7 +37,7 @@ return array(
 
 	// application components
 	'components'=>array(
-               // 'messages'=>array('class'=>'CDbMessageSource',),
+                'messages'=>array('class'=>'CDbMessageSource',),
                 'behaviors' => array('ApplicationConfigBehavior'),
 		'user'=>array(
                   // There you go, use our 'extended' version

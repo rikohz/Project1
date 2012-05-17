@@ -9,7 +9,7 @@
  */
 class VerifIdentity extends CActiveRecord
 {
-
+        
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @return VerifIdentity the static model class

@@ -284,3 +284,9 @@ div.addFavourite:hover, div.addFavouriteTruth:hover, div.addFavouriteDare:hover
 {
     cursor:pointer;
 }
+
+button.acceptChallenge
+{
+    width:100px;
+    height:40px;
+}

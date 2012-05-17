@@ -98,7 +98,7 @@ class UserController extends MyController
                 if($model->updatePicture($_POST['User']['profilePicture'],$_POST['User']['profilePictureExtension']))
                     Yii::app()->user->setFlash('updateProfilePicture','Your Profile Picture has been updated.'); 
             }
-            $this->render('updateProfilePicture',array('model'=>$model));
+            $this->render('myProfilePicture',array('model'=>$model));
         }
         
 	public function actionMyInformations()
@@ -226,6 +226,81 @@ class UserController extends MyController
             $this->render('myDares',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory));
 	}
 
+	public function actionMyFriends()
+	{                
+            //Filter and order criterias
+            if(isset($_GET['idCategory']))
+                Yii::app()->session['idCategoryFriends'] = $_GET['idCategory']; 
+            if(isset($_GET['idGender']))
+                Yii::app()->session['idGenderFriends'] = $_GET['idGender']; 
+            
+            $friendsRequest = Friend::getFriendRequests(Yii::app()->user->getId());
+            $friends = Friend::getFriends(Yii::app()->user->getId(),1,'username','ASC',Yii::app()->session['idGenderFriends'],Yii::app()->session['idCategoryFriends']);
+            $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+            $genders = array('0'=>'Female','1'=>'Male');
+            
+            $this->render('myFriends',array('categories'=>$categories,'idCategory'=>Yii::app()->session['idCategoryFriends'],'genders'=>$genders,'idGender'=>Yii::app()->session['idGenderFriends'],'friends'=>$friends,'friendsRequest'=>$friendsRequest));
+	}
+
+	public function actionMyChallenges()
+	{                
+            //Filter and order criterias
+            if(isset($_GET['idCategory']))
+                Yii::app()->session['idCategoryChallenge'] = $_GET['idCategory']; 
+            if(isset($_GET['idGender']))
+                Yii::app()->session['idGenderChallenge'] = $_GET['idGender']; 
+            if(isset($_GET['idTypeChallenge']))
+                Yii::app()->session['idTypeChallenge'] = $_GET['idTypeChallenge']; 
+            if(isset($_GET['idStatusChallenge']))
+                Yii::app()->session['idStatusChallenge'] = $_GET['idStatusChallenge']; 
+            if(isset($_GET['minDateChallenge']))
+                Yii::app()->session['minDateChallenge'] = $_GET['minDateChallenge']; 
+            if(isset($_GET['idPrivateStatus']))
+                Yii::app()->session['idPrivateStatus'] = $_GET['idPrivateStatus']; 
+            if(isset($_GET['idUserFrom']))
+                Yii::app()->session['idUserFrom'] = $_GET['idUserFrom']; 
+            
+            $challenges = Challenge::getChallenges(
+                    Yii::app()->user->getId(),Yii::app()->session['idCategoryChallenge'],
+                    Yii::app()->session['idGenderChallenge'],
+                    Yii::app()->session['idTypeChallenge'],
+                    Yii::app()->session['idStatusChallenge'],     
+                    Yii::app()->session['minDateChallenge'],
+                    Yii::app()->session['idPrivateStatus'],
+                    Yii::app()->session['idUserFrom']
+            );
+            
+            $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+            $genders = array('0'=>'Female','1'=>'Male');
+            $typeChallenges = array('Truth'=>'Truth','Dare'=>'Dare');
+            $statusChallenges = array('0'=>'Waiting','1'=>'Success');
+            $period = array(MyFunctions::getFirstDayWeek()=>'Week',MyFunctions::getFirstDayMonth()=>'Month',MyFunctions::getFirstDayYear()=>'Year');
+            $privateStatus = array('0'=>'Public','1'=>'Private');
+            $userFrom = CHtml::listData(Friend::getFriends(Yii::app()->user->getId()), 'idUser', 'username');
+            
+            $model = new Challenge;
+            
+            $this->render(
+                    'myChallenges',array(
+                        'model'=>$model,
+                        'categories'=>$categories,
+                        'idCategory'=>Yii::app()->session['idCategoryChallenge'],
+                        'genders'=>$genders,
+                        'idGender'=>Yii::app()->session['idGenderChallenge'],
+                        'typeChallenges'=>$typeChallenges,
+                        'idTypeChallenge'=>Yii::app()->session['idTypeChallenge'],
+                        'statusChallenges'=>$statusChallenges,
+                        'idStatusChallenge'=>Yii::app()->session['idStatusChallenge'],
+                        'period'=>$period,
+                        'minDateChallenge'=>Yii::app()->session['minDateChallenge'],
+                        'privateStatus'=>$privateStatus,
+                        'idPrivateStatus'=>Yii::app()->session['idPrivateStatus'],
+                        'userFrom'=>$userFrom,
+                        'idUserFrom'=>Yii::app()->session['idUserFrom'],
+                        'challenges'=>$challenges)
+            );
+	}
+
         
         
 //      <!--********************************-->
@@ -289,6 +364,124 @@ class UserController extends MyController
             echo "ERROR";
             return;
 	}
+
+	public function actionSendFriendRequest()
+	{
+            if(isset($_POST['idUser']))
+            {  
+                if(!Friend::areFriendsOrFriendRequest(Yii::app()->user->getId(),$_POST['idUser']))
+                {                
+                    $friendRequest = new Friend;
+                    $friendRequest->idUserFrom = Yii::app()->user->getId();
+                    $friendRequest->idUserTo = $_POST['idUser'];
+                    $friendRequest->createDate = date('Y-m-d, H:i:s');
+                    if($friendRequest->save())
+                        echo "A friend request has been sent!";
+                    return;
+                }
+                echo "You are already friends or have a Friend Request processing"  ;
+                return;
+            }
+	}
+
+	public function actionAcceptFriendRequest()
+	{
+            if(isset($_POST['idUser']))
+            {  
+                $friendRequest = Friend::model()->findByAttributes(array('idUserTo'=>Yii::app()->user->getId(),'idUserFrom'=>$_POST['idUser'],'accepted'=>0));
+                if($friendRequest !== null)
+                {                
+                    $friendRequest->accepted = 1;
+                    if($friendRequest->save())
+                        echo "Accepted!";
+                }
+            }
+	}
+
+	public function actionDeclineFriendRequest()
+	{
+            if(isset($_POST['idUser']))
+            {  
+                $friendRequest = Friend::model()->findByAttributes(array('idUserTo'=>Yii::app()->user->getId(),'idUserFrom'=>$_POST['idUser'],'accepted'=>0));
+                if($friendRequest !== null)
+                {                
+                    $friendRequest->accepted = 2;
+                    if($friendRequest->save())
+                        echo "Declined!";
+                }
+            }
+	}
+
+	public function actionSendChallenge()
+	{
+            if(isset($_POST['idUser'], $_POST['private'], $_POST['comment']) && (isset($_POST['idTruth']) || isset($_POST['idDare'])))
+            {  
+                $type = isset($_POST['idTruth']) ? "idTruth" : "idDare";
+                $id = isset($_POST['idTruth']) ? $_POST['idTruth'] : $_POST['idDare'];
+                
+                //If the challenge is public and it already exists
+                if($_POST['private'] == 'false' && Challenge::model()->exists("idUserTo = :idUserTo AND $type = :id",array(':idUserTo'=>$_POST['idUser'],':id'=>$id)))
+                {
+                    echo 'ALREADY_EXISTS';
+                    return;
+                }
+
+                $challenge = new Challenge;
+                $challenge->idUserFrom = Yii::app()->user->getId();
+                $challenge->idUserTo = $_POST['idUser'];
+                $challenge->$type = $id;
+                $challenge->createDate = date('Y-m-d, H:i:s');
+                $challenge->private = $_POST['private'] == 'true' ? 1 : 0;
+                $challenge->comment = $_POST['comment'];
+                $challenge->save();
+                echo "SUCCESS";
+            }
+	}
+
+	public function actionAcceptChallenge()
+	{
+            if(isset($_POST['idChallenge'], $_POST['type']))
+            {  
+                $challenge = Challenge::model()->findByPk($_POST['idChallenge']);
+                
+                if($_POST['type'] == 'Truth' && isset($_POST['answer']) && $challenge->idUserTo == Yii::app()->user->getId())
+                {
+                    $challenge->answer = $_POST['answer'];
+                    $challenge->finishDate = date('Y-m-d, H:i:s');
+                    $challenge->status = 1;
+                    $challenge->save();
+                    echo "SUCCESS";
+                }
+                if($_POST['type'] == 'Dare' && isset($_POST['pictureName'],$_POST['pictureExtension'],$_POST['answer']) && $challenge->idUserTo == Yii::app()->user->getId())
+                {
+                    $challenge->addPicture($_POST['pictureName'],$_POST['pictureExtension']);
+                    $challenge->answer = $_POST['answer'];
+                    $challenge->finishDate = date('Y-m-d, H:i:s');
+                    $challenge->status = 1;
+                    $challenge->pictureName = $_POST['pictureName'];
+                    $challenge->pictureExtension = $_POST['pictureExtension'];
+                    $challenge->save();
+                    echo "SUCCESS";
+                }
+            }
+	}
+
+	public function actionDeleteChallenge()
+	{
+            if(isset($_POST['idChallenge']))
+            {  
+                $challenge = Challenge::model()->findByPk($_POST['idChallenge']);
+                if($challenge->idUserTo == Yii::app()->user->getId())
+                {
+                    //We change the status to decline
+                    $challenge->status = 2;
+                    $challenge->save();
+                    //We delete the associated votes
+                    $votingDetails = VotingDetail::model()->deleteAllByAttributes(array('idChallenge'=>$_POST['idChallenge']));
+                    echo "SUCCESS";
+                }
+            }
+	}
         
 	public function actionUpdateCities()
 	{
@@ -333,7 +526,7 @@ class UserController extends MyController
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('myPage', 'userPage', 'myInformations','myPassword', 'myCoins','deleteCoin','myProfilePicture','myLists','mySettings','myTruths','myDares'),
+				'actions'=>array('myPage', 'userPage', 'myInformations','myPassword', 'myCoins','deleteCoin','myProfilePicture','myLists','mySettings','myTruths','myDares','sendFriendRequest','myFriends','acceptFriendRequest','declineFriendRequest','myChallenges','acceptChallenge','deleteChallenge','sendChallenge'),
 				'users'=>array('@'),
 			),
 			array('deny',  // deny all users

@@ -1,7 +1,8 @@
 <script type="text/javascript">
 function selectCategory(dropDownList)
 {
-    window.location = "index.php?r=truth/truth&idCategory=" + dropDownList.selectedIndex;
+    var value = dropDownList.options[dropDownList.selectedIndex].value;
+    window.location = "index.php?r=truth/truth&idCategory=" + value;
 }
 </script>
  
@@ -37,7 +38,8 @@ $this->breadcrumbs=array(
             'order'=>$order,
             'withVotes'=>1,
             'withFavourites'=>!Yii::app()->user->isGuest,
-            'withComments'=>1
+            'withComments'=>1,
+            'withSendChallenge'=>!Yii::app()->user->isGuest
             )); ?>
 
 

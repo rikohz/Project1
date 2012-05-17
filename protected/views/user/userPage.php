@@ -1,10 +1,44 @@
 <script type="text/javascript">
+//Progress bar for Truth
 $(document).ready(function() {
     $("#progressBarTruth").progressbar({ value: <?php echo MyFunctions::getValueProgressBar($user->scoreTruth->score); ?> });
   });
+  
+//Progress bar for Dare
 $(document).ready(function() {
     $("#progressBarDare").progressbar({ value: <?php echo MyFunctions::getValueProgressBar($user->scoreDare->score); ?> });
   });
+  
+//Send friend request
+function sendFriendRequest()
+{
+    $.ajax({
+        type: "POST",
+        url: "index.php?r=user/sendFriendRequest",
+        data: "idUser=<?php echo $user->idUser; ?>",
+        cache: false,
+
+        success: function(html)
+        {
+            document.getElementById('dialog-friendRequest').innerHTML = html;
+            $('#dialog-friendRequest').dialog('open');
+        } 
+    })
+};
+
+//Dialog box for Friend Request
+$(function() {         
+    $("#dialog:ui-dialog").dialog( "destroy" );
+    $("#dialog-friendRequest").dialog({ autoOpen: false })
+    $("#dialog-friendRequest").dialog({
+            modal: true,
+            buttons: {
+                    Ok: function() {
+                            $( this ).dialog( "close" );
+                    }
+            }
+    });
+});
 </script>  
 
 <?php 
@@ -38,6 +72,7 @@ $(document).ready(function() {
         <a style="display:block;" href="index.php?r=user/myTruths">See Truths</a>
         <a style="display:block;" href="index.php?r=user/myDares">See Dares</a>
         <a style="display:block;" href="index.php?r=user/myLists">See Lists</a>
+        <a style="display:block;" href="#" onClick="sendFriendRequest()">Add Friend</a>
     </div>
     
     <!--*****************-->
@@ -126,3 +161,9 @@ $(document).ready(function() {
         <p>See yiinfinite-scroll</p>
     </div>
 </div>
+
+
+<!--***************************-->
+<!-- Dialog for Friend Request -->
+<!--***************************-->
+<div id="dialog-friendRequest" title="Friend Request"></div>

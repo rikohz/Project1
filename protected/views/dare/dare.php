@@ -1,7 +1,8 @@
 <script type="text/javascript">
 function selectCategory(dropDownList)
 {
-    window.location = "index.php?r=dare/dare&idCategory=" + dropDownList.selectedIndex;
+    var value = dropDownList.options[dropDownList.selectedIndex].value;
+    window.location = "index.php?r=dare/dare&idCategory=" + value;
 }
 </script>
  

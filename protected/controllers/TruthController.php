@@ -14,12 +14,10 @@ class TruthController extends MyController
             //Filter and order criterias
             if(isset($_GET['idCategory']))
                 Yii::app()->session['idCategory'] = $_GET['idCategory']; 
-            $idCategory = Yii::app()->session['idCategory'];
             if(isset($_GET['order']))
                 Yii::app()->session['order'] = $_GET['order']; 
-            $order = Yii::app()->session['order'];
             
-            $this->render('truth',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory));
+            $this->render('truth',array('categories'=>$categories,'order'=>Yii::app()->session['order'],'idCategory'=>Yii::app()->session['idCategory']));
 	}
          
         
