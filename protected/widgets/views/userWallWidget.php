@@ -236,7 +236,7 @@ $(document).ready(function() {
                     <?php $ref = substr($row['type'],0,1) . $row['id']; ?>
 
                     <!-- Like and Dislike -->
-                    <?php if($this->withVotes){ ?>
+                    <?php if($this->withVotes && $row['idDisplayUser'] !== $this->idCurrentUser){ ?>
                         <span style="float:right;" id="nbVote<?php echo $ref; ?>"><?php echo $row['vote']; ?></span>
                         <a href="" class="voteTruthOrDare" style="background-image: url(/TruthOrDare/images/iDislike.png);" id="V<?php echo $ref; ?>" name="down">&nbsp;</a>
                         <a href="" class="voteTruthOrDare" style="background-image: url(/TruthOrDare/images/iLike.png);" id="V<?php echo $ref; ?>" name="up">&nbsp;</a>
@@ -271,7 +271,7 @@ $(document).ready(function() {
                     <?php $ref = substr($row['type'],0,1) . $row['id']; ?>
 
                     <!-- Like and Dislike -->
-                    <?php if($this->withVotes){ ?>
+                    <?php if($this->withVotes && $row['idDisplayUser'] !== $this->idCurrentUser){ ?>
                         <span style="float:right;" id="nbVote<?php echo $ref; ?>"><?php echo $row['vote']; ?></span>
                         <a href="" class="voteChallenge" style="background-image: url(/TruthOrDare/images/iDislike.png);" id="V<?php echo $ref; ?>" name="down">&nbsp;</a>
                         <a href="" class="voteChallenge" style="background-image: url(/TruthOrDare/images/iLike.png);" id="V<?php echo $ref; ?>" name="up">&nbsp;</a>

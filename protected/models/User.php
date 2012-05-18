@@ -460,6 +460,7 @@ class User extends CActiveRecord
 
                     $transaction->commit();
                 }
+                else $result = 0;
             }
             catch(Exception $e)
             {

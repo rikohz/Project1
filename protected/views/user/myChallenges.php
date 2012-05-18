@@ -147,10 +147,29 @@ $(function() {
     $(".answerTruth").click(function() {
         answerTruth = $(this).html();
         $( "#answerTruth" ).html(answerTruth);
+        id = $(this).attr("id").substring(2, $(this).attr("id").length);
+        type = $(this).attr("id").substring(0,2) == 'TR' ? 'Truth' : 'Dare';
+        $("#dialog-form-see-answerTruth").dialog('option', 'title', 'Challenge ' + type + ' #'+id); 
         $( "#dialog-form-see-answerTruth" ).dialog( "open" );
     }); 
     
     $( "#dialog-form-see-answerTruth" ).dialog({
+            autoOpen: false
+    });
+
+    //<!--*********************************-->
+    //<!-- Dialog box to see Truth or Dare -->
+    //<!--*********************************-->
+    $(".truthOrDare").click(function() {
+        truthOrDare = $(this).html();
+        $( "#truthOrDare" ).html(truthOrDare);
+        id = $(this).attr("id").substring(2, $(this).attr("id").length);
+        type = $(this).attr("id").substring(0,2) == 'TR' ? 'Truth' : 'Dare';
+        $("#dialog-form-see-truthOrDare").dialog('option', 'title', 'Challenge ' + type + ' #'+id); 
+        $("#dialog-form-see-truthOrDare").dialog( "open" );
+    }); 
+    
+    $( "#dialog-form-see-truthOrDare" ).dialog({
             autoOpen: false
     });
 
@@ -272,9 +291,10 @@ $this->breadcrumbs=array(
         <td width="3%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
         <td width="3%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
         <td width="3%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
+        <td width="5%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
         <td width="10%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
         <td width="30%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
-        <td width="40%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
+        <td width="35%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
         <td width="3%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
     </tr>
     <?php foreach($challenges as $row): ?>
@@ -283,14 +303,19 @@ $this->breadcrumbs=array(
             <td><?php echo $row->truth === null ? "D" : "T"; ?></td>
             <td><?php echo $row->truth === null ? $row->dare->category->category : $row->truth->category->category; ?></td>
             <td><?php if($row->private == 1){echo "P";} ?></td>
+            <td><?php echo ($row->voteUp - $row->voteDown) >= 0 ? '+ ' . ($row->voteUp - $row->voteDown) : '- ' . ($row->voteUp - $row->voteDown); ?></td>
             <td><a href="index.php?r=user/userPage&idUser=<?php echo $row->idUserFrom; ?>"><?php echo $row->userFrom->username; ?></a></td>
-            <td><?php echo $row->truth === null ? $row->dare->dare : $row->truth->truth; ?></td>
-            <td <?php if($row->truth !== null){echo "class='answerTruth' style='cursor:pointer;'";}; ?>>
+            <td style="overflow:hidden;">
+                <span id="<?php echo $row->truth === null ? 'DA' . $row->dare->idDare : 'TR' . $row->truth->idTruth; ?>" class='truthOrDare' style='cursor:pointer;display:block;height:50px;overflow:hidden;'>
+                    <?php echo $row->truth === null ? $row->dare->dare : $row->truth->truth; ?>
+                </span>
+            </td>
+            <td>
                 <?php if($row->status == 0): ?>
                     <button type="button" id="<?php echo $row->idChallenge; ?>" class="acceptChallenge<?php echo $row->dare === null ? 'Truth' : 'Dare'; ?>">Accept!</button>
                 <?php else: ?>
                     <?php if($row->dare === null): ?>
-                        <span><?php echo $row->answer; ?></span>
+                        <span id="<?php echo $row->truth === null ? 'DA' . $row->dare->idDare : 'TR' . $row->truth->idTruth; ?>" class='answerTruth' style='cursor:pointer;display:block;height:50px;overflow:hidden;'><?php echo $row->answer; ?></span>
                     <?php else: ?>
                         <a id="<?php echo $row->idChallenge; ?>" class="challengePicture" title="<?php echo "Dare #" . $row->dare->idDare . " (" . $row->dare->category->category . "): " . $row->dare->dare ?>" href="userImages/challenge_original/<?php echo $row->pictureName . '_original' . $row->pictureExtension; ?>"><img src="userImages/challenge_mini/<?php echo $row->pictureName . '_mini' . $row->pictureExtension; ?>" width="48px" height="48px" /></a>
                     <?php endif; ?>
@@ -337,11 +362,19 @@ $this->breadcrumbs=array(
 </div>
 
 
+<!--*************************************-->
+<!-- Dialog box to see the Truth or Dare -->
+<!--*************************************-->
+<div id="dialog-form-see-truthOrDare" title="See answer">
+    <div id="truthOrDare">&nbsp;</div>
+</div>
+
+
 <!--******************************************-->
 <!-- Dialog box to see answer Challenge Truth -->
 <!--******************************************-->
 <div id="dialog-form-see-answerTruth" title="See answer">
-    <div id="answerTruth">Are you sure to delete this Challenge (you will lose all the points related ot it)?</div>
+    <div id="answerTruth">&nbsp;</div>
 </div>
 
 
