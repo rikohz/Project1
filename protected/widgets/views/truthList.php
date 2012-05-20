@@ -63,11 +63,8 @@ $(function() {
     });
 
     $( ".addFavouriteTruth" ).click(function() {
-        if($(this).attr("tag") !== 'Chosen')
-        {
-            idTruth = $(this).attr("id").substring(2, $(this).attr("id").length);
-            $( "#dialog-form-favourite-truth" ).dialog( "open" );
-        }    
+        idTruth = $(this).attr("id").substring(2, $(this).attr("id").length);
+        $( "#dialog-form-favourite-truth" ).dialog( "open" ); 
     });
 
     //Send Challenge
@@ -157,8 +154,7 @@ $(function() {
     
     <!-- Favourite -->
     <?php if($this->withFavourites){?>
-        <div tag='<?php echo $row->nbFavourite > 0 ? 'Chosen' : ''; ?>' 
-             class='addFavouriteTruth' 
+        <div class='addFavouriteTruth' 
              <?php if($row->nbFavourite > 0){echo " style='background-image: url(/TruthOrDare/images/favouriteChosen.png);' ";} ?> 
              id='FT<?php echo $row->idTruth; ?>'>&nbsp;
         </div>

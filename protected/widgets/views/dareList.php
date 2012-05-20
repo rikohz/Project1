@@ -42,7 +42,7 @@ $(function() {
             modal: true,
             buttons: {
                     "Validate": function() {
-                            var idUserList = $( "#UserListDare_name" ).val();
+                            var idUserList = $( "#FavouriteDare_idUserList" ).val();
                             if ( idUserList !== '' ) {
                                     $.ajax({ 
                                       url: "index.php?r=site/addFavourite", 
@@ -63,11 +63,8 @@ $(function() {
     });
 
     $( ".addFavouriteDare" ).click(function() {
-        if($(this).attr("tag") !== 'Chosen')
-        {
-            idDare = $(this).attr("id").substring(2, $(this).attr("id").length);
-            $( "#dialog-form-favourite-dare" ).dialog( "open" );
-        }    
+        idDare = $(this).attr("id").substring(2, $(this).attr("id").length);
+        $( "#dialog-form-favourite-dare" ).dialog( "open" ); 
     });
 
     //Send Challenge
@@ -157,8 +154,7 @@ $(function() {
     
     <!-- Favourite -->
     <?php if($this->withFavourites){?>
-        <div tag='<?php echo $row->nbFavourite > 0 ? 'Chosen' : ''; ?>' 
-             class='addFavouriteDare' 
+        <div class='addFavouriteDare' 
              <?php if($row->nbFavourite > 0){echo " style='background-image: url(/TruthOrDare/images/favouriteChosen.png);' ";} ?> 
              id='FD<?php echo $row->idDare; ?>'>&nbsp;
         </div>

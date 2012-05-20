@@ -164,12 +164,6 @@ class UserController extends MyController
         {         
             $this->render('mySettings');
         }
-        
-	public function actionMyLists()
-        {        
-            $model = UserList::model()->findAllByAttributes(array('idUser'=>Yii::app()->user->getId()));
-            $this->render('myLists',array('model'=>$model));
-        }
      
 	public function actionMyPassword()
         {      
@@ -301,6 +295,14 @@ class UserController extends MyController
             );
 	}
 
+	public function actionMyLists()
+	{                
+            $userLists = Userlist::model()->with('userListContents','userListContents.truth','userListContents.dare','userListContents.truth.category','userListContents.dare.category')->findAllByAttributes(array('idUser'=>Yii::app()->user->getId()));
+            $friends = CHtml::listData(Friend::getFriends(Yii::app()->user->getId()),'idUser','username');
+            
+            $this->render('myLists',array('userlists'=>$userLists,'friends'=>$friends));
+	}
+
         
         
 //      <!--********************************-->
@@ -358,6 +360,66 @@ class UserController extends MyController
                     }
                     echo "You need at least one coin!";
                     return;
+                }
+            }
+            
+            echo "ERROR";
+            return;
+	}
+
+	public function actionAddUserList()
+	{
+            if(isset($_POST['name'],$_POST['public']))
+            {  
+                $userList = new Userlist;
+                $userList->idUser = Yii::app()->user->getId();
+                $userList->createDate = date('Y-m-d, H:i:s');
+                $userList->public = $_POST['public'] == 'true' ? 1 : 0;
+                $userList->name = $_POST['name'];
+                if($userList->save())
+                {
+                    echo "SUCCESS";
+                    return;
+                }
+            }
+            
+            echo "ERROR";
+            return;
+	}
+
+	public function actionDeleteUserList()
+	{
+            if(isset($_POST['idUserList']))
+            {  
+                $userList = Userlist::model()->findByPk($_POST['idUserList']);
+                //Verify that the person who deletes the content is its owner
+                if($userList->idUser == Yii::app()->user->getId())
+                {
+                    if($userList->delete())
+                    {
+                        echo "SUCCESS";
+                        return;
+                    }
+                }
+            }
+            
+            echo "ERROR";
+            return;
+	}
+
+	public function actionDeleteUserListContent()
+	{
+            if(isset($_POST['idUserListContent']))
+            {  
+                $userListContent = Userlistcontent::model()->with('userList')->findByPk($_POST['idUserListContent']);
+                //Verify that the person who deletes the content is its owner
+                if($userListContent->userList->idUser == Yii::app()->user->getId())
+                {
+                    if($userListContent->delete())
+                    {
+                        echo "SUCCESS";
+                        return;
+                    }
                 }
             }
             
@@ -526,7 +588,7 @@ class UserController extends MyController
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('myPage', 'userPage', 'myInformations','myPassword', 'myCoins','deleteCoin','myProfilePicture','myLists','mySettings','myTruths','myDares','sendFriendRequest','myFriends','acceptFriendRequest','declineFriendRequest','myChallenges','acceptChallenge','deleteChallenge','sendChallenge'),
+				'actions'=>array('myPage', 'userPage', 'myInformations','myPassword', 'myCoins','deleteCoin','myProfilePicture','myLists','mySettings','myTruths','myDares','sendFriendRequest','myFriends','acceptFriendRequest','declineFriendRequest','myChallenges','acceptChallenge','deleteChallenge','sendChallenge','addUserList','deleteUserList','deleteUserListContent'),
 				'users'=>array('@'),
 			),
 			array('deny',  // deny all users
