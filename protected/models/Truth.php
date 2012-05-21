@@ -158,6 +158,10 @@ class Truth extends CActiveRecord
                 $criteria->addCondition(' t.idCategory = :idCategory ');
                 $criteria->params[":idCategory"] = $this->idCategory;
             }
+            if(isset($this->anonymous)){
+                $criteria->addCondition(' t.anonymous = :anonymous ');
+                $criteria->params[":anonymous"] = $this->anonymous;
+            }
             if(isset($this->levelMax)){
                 $criteria->addCondition(' categoryTruth.level <= :levelMax ');
                 $criteria->params[":levelMax"] = $this->levelMax;

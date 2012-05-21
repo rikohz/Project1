@@ -108,11 +108,14 @@ class Friend extends CActiveRecord
 	 * Function that checks if 2 users are friends or have already friend requests processing
 	 * @return 1 if friends 0 otherwise
 	 */
-        public static function areFriendsOrFriendRequest($idUser1, $idUser2)
+        public static function areFriendsOrFriendRequest($idUser1, $idUser2, $friendStatus=null)
         {
             $criteria = new CDbCriteria;
             $criteria->addCondition('((idUserFrom = :idUserFrom AND idUserTo = :idUserTo) OR (idUserFrom = :idUserTo AND idUserTo = :idUserFrom))');
-            $criteria->addInCondition('accepted', array("0","1"));
+            if($friendStatus === null)
+                $criteria->addInCondition('accepted', array("0","1"));
+            else
+                $criteria->addCondition("accepted = $friendStatus"); 
             $criteria->params[":idUserFrom"] = $idUser1;
             $criteria->params[":idUserTo"] = $idUser2;
             return Friend::model()->exists($criteria);

@@ -1,7 +1,7 @@
 <?php
 $rndId = uniqid();
                 
-$uploadFromServerView = "/TruthOrDare/userImages/temp/{$rndId}." . pathinfo($_FILES["userfile"]["name"], PATHINFO_EXTENSION);  ;
+$uploadFromServerView = "/TruthOrDare/userImages/temp/{$rndId}." . pathinfo($_FILES["userfile"]["name"], PATHINFO_EXTENSION);
 $uploadfile = $_SERVER['DOCUMENT_ROOT']."TruthOrDare/userImages/temp/{$rndId}." . pathinfo($_FILES["userfile"]["name"], PATHINFO_EXTENSION);
 $allowedExtensions = array("image/gif","image/jpeg","image/png","image/pjpeg");
 

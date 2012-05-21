@@ -74,6 +74,8 @@ $(function() {
                     "Validate": function() {
                         if($('#validateImage').val() == 1)
                         {
+                            var tempName = $('#tempName').val();
+                            var extension = $('#extension').val();
                             $.ajax({ 
                               url: "index.php?r=user/acceptChallenge", 
                               type: "POST", 
@@ -81,15 +83,19 @@ $(function() {
                                   'type' : 'Dare',
                                   'answer' : $( "#ChallengeDare_answer" ).val(),
                                   'idChallenge' : idChallenge,
-                                  'pictureName' : $('#tempName').val(),
-                                  'pictureExtension' : $('#extension').val()
+                                  'pictureName' : tempName,
+                                  'pictureExtension' : extension
                               }, 
                               success: function(result){ 
                                   if(result == "SUCCESS")
-                                    parent.html("<img src='userImages/challenge_mini/" + $('#tempName').val() + "_mini" + $('#extension').val() + "' width='48px' height='48px' />");  
+                                    parent.html("<img src='userImages/challenge_mini/" + tempName + "_mini" + extension + "' width='48px' height='48px' />"); 
                                 } 
                             });  
                             $( this ).dialog( "close" );
+                            $('#tempName').val("");
+                            $('#extension').val("");
+                            $("#ChallengeDare_answer").val("");
+                            $("#thumb").attr("src",""); 
                         } else{
                             document.getElementById('errorUpload').innerHTML = "You have to select a suitable Picture!";
                         }
@@ -132,6 +138,7 @@ $(function() {
                                     parent.html(answer);  
                                 } 
                             });  
+                            $( "#ChallengeTruth_answer" ).val("");
                             $( this ).dialog( "close" );
                         }
                     },

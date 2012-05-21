@@ -22,6 +22,10 @@ class DareList extends CWidget
     public $withComments;
     
     //Bit
+    //Display the truth marked as Private
+    public $withoutAnonymous = 0;
+    
+    //Bit
     //Allow user to send as a Challenge
     public $withSendChallenge;
     
@@ -71,6 +75,8 @@ class DareList extends CWidget
             $model->idDare = $this->idDare;
         if(isset($this->idUserFilter))
             $model->idUser = $this->idUserFilter;
+        if($this->withoutAnonymous === 1)
+            $model->anonymous = 0;
         $criteria = $model->getCriteria();   
         if(isset($this->limit))
             $criteria->limit = $this->limit; 

@@ -221,17 +221,25 @@ $(function() {
 //  <!--******************-->
 //  <!-- Public / Private -->
 //  <!--******************-->
-var showPublic = true;
-var showPrivate = true;
+var showPublic = <?php echo $public == 1 || $public == "" ? 'true' : 'false'; ?>;
+var showPrivate = <?php echo $public == 0 || $public == "" ? 'true' : 'false'; ?>;
+
 function selectPublic(){
     showPublic = !showPublic;
-    filterPublicPrivate();
+    showPrivate = showPublic === false ? true : showPrivate; 
+    reloadPage();
 }
 function selectPrivate(){
     showPrivate = !showPrivate;
-    filterPublicPrivate();
+    showPublic = showPrivate === false ? true : showPublic; 
+    reloadPage();
 }
-function filterPublicPrivate(){
+function reloadPage(){ 
+    updateStyle();
+    var value = showPublic === true ? (showPrivate === true ? "" : 1) : (showPrivate === true ? 0 : "x");
+    window.location = "index.php?r=user/myLists&public=" + value;
+}
+function updateStyle(){
     document.getElementById('public').style.backgroundPosition = showPublic === true ? "0% 33%" : "0% 0%";
     document.getElementById('private').style.backgroundPosition = showPrivate === true ? "0% 97%" : "0% 66%";
 }
@@ -255,6 +263,7 @@ function filterPublicPrivate(){
     <div class="public" id="public" onClick="selectPublic()">&nbsp;</div>
     <div class="private" id="private" onClick="selectPrivate()">&nbsp;</div>
 </div>
+<script type="text/javascript">updateStyle()</script>
 
 <div id="tabs">
     <ul>

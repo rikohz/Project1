@@ -59,8 +59,6 @@ class UserController extends MyController
 
                 $this->render('userPage',array('user'=>$user,'score'=>$score));
             }
-            else
-                throw CHttpException(404,'Page not found');
 	}
         
 	public function actionRegister()
@@ -205,6 +203,26 @@ class UserController extends MyController
             $this->render('myTruths',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory));
 	}
 
+	public function actionUserTruths()
+	{                
+            if(isset($_GET['idUser']) && Friend::areFriendsOrFriendRequest($_GET['idUser'],Yii::app()->user->getId(),1) == 1)
+            {
+                $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+
+                //Filter and order criterias
+                if(isset($_GET['idCategory']))
+                    Yii::app()->session['idCategory'] = $_GET['idCategory']; 
+                $idCategory = Yii::app()->session['idCategory'];
+                if(isset($_GET['order']))
+                    Yii::app()->session['order'] = $_GET['order']; 
+                $order = Yii::app()->session['order'];
+
+                $this->render('userTruths',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory,'idUser'=>$_GET['idUser']));	
+            }
+            else
+                throw new CHttpException(404,'The page cannot be found.');
+        }
+
 	public function actionMyDares()
 	{                
             $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
@@ -219,6 +237,46 @@ class UserController extends MyController
             
             $this->render('myDares',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory));
 	}
+
+	public function actionUserDares()
+	{                
+            if(isset($_GET['idUser']) && Friend::areFriendsOrFriendRequest($_GET['idUser'],Yii::app()->user->getId(),1) == 1)
+            {
+                $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+
+                //Filter and order criterias
+                if(isset($_GET['idCategory']))
+                    Yii::app()->session['idCategory'] = $_GET['idCategory']; 
+                $idCategory = Yii::app()->session['idCategory'];
+                if(isset($_GET['order']))
+                    Yii::app()->session['order'] = $_GET['order']; 
+                $order = Yii::app()->session['order'];
+
+                $this->render('userDares',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory,'idUser'=>$_GET['idUser']));	
+            }
+            else
+                throw new CHttpException(404,'The page cannot be found.');
+        }
+
+	public function actionUserFriends()
+	{             
+            if(isset($_GET['idUser']) && Friend::areFriendsOrFriendRequest($_GET['idUser'],Yii::app()->user->getId(),1) == 1)
+            {
+                //Filter and order criterias
+                if(isset($_GET['idCategory']))
+                    Yii::app()->session['idCategoryFriends'] = $_GET['idCategory']; 
+                if(isset($_GET['idGender']))
+                    Yii::app()->session['idGenderFriends'] = $_GET['idGender']; 
+
+                $friends = Friend::getFriends($_GET['idUser'],1,'username','ASC',Yii::app()->session['idGenderFriends'],Yii::app()->session['idCategoryFriends']);
+                $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+                $genders = array('0'=>'Female','1'=>'Male');
+
+                $this->render('userFriends',array('categories'=>$categories,'idCategory'=>Yii::app()->session['idCategoryFriends'],'genders'=>$genders,'idGender'=>Yii::app()->session['idGenderFriends'],'friends'=>$friends));
+            }
+            else
+                throw new CHttpException(404,'The page cannot be found.');
+        }
 
 	public function actionMyFriends()
 	{                
@@ -295,12 +353,103 @@ class UserController extends MyController
             );
 	}
 
+	public function actionUserChallenges()
+	{                             
+            if(isset($_GET['idUser']) && Friend::areFriendsOrFriendRequest($_GET['idUser'],Yii::app()->user->getId(),1) == 1)
+            {    
+                //Filter and order criterias
+                if(isset($_GET['idCategory']))
+                    Yii::app()->session['idCategoryChallenge'] = $_GET['idCategory']; 
+                if(isset($_GET['idGender']))
+                    Yii::app()->session['idGenderChallenge'] = $_GET['idGender']; 
+                if(isset($_GET['idTypeChallenge']))
+                    Yii::app()->session['idTypeChallenge'] = $_GET['idTypeChallenge']; 
+                if(isset($_GET['idStatusChallenge']))
+                    Yii::app()->session['idStatusChallenge'] = $_GET['idStatusChallenge']; 
+                if(isset($_GET['minDateChallenge']))
+                    Yii::app()->session['minDateChallenge'] = $_GET['minDateChallenge']; 
+                if(isset($_GET['idUserFrom']))
+                    Yii::app()->session['idUserFrom'] = $_GET['idUserFrom']; 
+
+                $challenges = Challenge::getChallenges(
+                        $_GET['idUser'],
+                        Yii::app()->session['idCategoryChallenge'],
+                        Yii::app()->session['idGenderChallenge'],
+                        Yii::app()->session['idTypeChallenge'],
+                        Yii::app()->session['idStatusChallenge'],     
+                        Yii::app()->session['minDateChallenge'],
+                        0,
+                        Yii::app()->session['idUserFrom']
+                );
+
+                $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+                $genders = array('0'=>'Female','1'=>'Male');
+                $typeChallenges = array('Truth'=>'Truth','Dare'=>'Dare');
+                $statusChallenges = array('0'=>'Waiting','1'=>'Success');
+                $period = array(MyFunctions::getFirstDayWeek()=>'Week',MyFunctions::getFirstDayMonth()=>'Month',MyFunctions::getFirstDayYear()=>'Year');
+                $userFrom = CHtml::listData(Friend::getFriends($_GET['idUser']), 'idUser', 'username');
+
+                $model = new Challenge;
+
+                $this->render(
+                        'userChallenges',array(
+                            'model'=>$model,
+                            'categories'=>$categories,
+                            'idCategory'=>Yii::app()->session['idCategoryChallenge'],
+                            'genders'=>$genders,
+                            'idGender'=>Yii::app()->session['idGenderChallenge'],
+                            'typeChallenges'=>$typeChallenges,
+                            'idTypeChallenge'=>Yii::app()->session['idTypeChallenge'],
+                            'statusChallenges'=>$statusChallenges,
+                            'idStatusChallenge'=>Yii::app()->session['idStatusChallenge'],
+                            'period'=>$period,
+                            'minDateChallenge'=>Yii::app()->session['minDateChallenge'],
+                            'userFrom'=>$userFrom,
+                            'idUserFrom'=>Yii::app()->session['idUserFrom'],
+                            'challenges'=>$challenges,
+                            'idUser'=>$_GET['idUser'])
+                );
+            }
+            else
+                throw new CHttpException(404,'The page cannot be found.');
+	}
+
 	public function actionMyLists()
-	{                
-            $userLists = Userlist::model()->with('userListContents','userListContents.truth','userListContents.dare','userListContents.truth.category','userListContents.dare.category')->findAllByAttributes(array('idUser'=>Yii::app()->user->getId()));
+	{               
+            $criteria = new CDbCriteria;
+            $criteria->addCondition('t.idUser = :idUser');
+            $criteria->params = array(':idUser'=>Yii::app()->user->getId());
+            if(isset($_GET['public']))
+                Yii::app()->session['myListsPublic'] = $_GET['public']; 
+            if(isset(Yii::app()->session['myListsPublic']) && Yii::app()->session['myListsPublic'] !== "")
+            {
+                $criteria->addCondition('t.public = :public');
+                $criteria->params[':public'] = Yii::app()->session['myListsPublic'];
+            }
+            
+            $userLists = Userlist::model()->with('userListContents','userListContents.truth','userListContents.dare','userListContents.truth.category','userListContents.dare.category')->findAll($criteria);
             $friends = CHtml::listData(Friend::getFriends(Yii::app()->user->getId()),'idUser','username');
             
-            $this->render('myLists',array('userlists'=>$userLists,'friends'=>$friends));
+            $this->render('myLists',array('userlists'=>$userLists,'friends'=>$friends,'public'=>Yii::app()->session['myListsPublic']));
+	}
+
+	public function actionUserLists()
+	{                   
+            if(isset($_GET['idUser']) && Friend::areFriendsOrFriendRequest($_GET['idUser'],Yii::app()->user->getId(),1) == 1)
+            {       
+                $criteria = new CDbCriteria;
+                $criteria->addCondition('t.idUser = :idUser');
+                $criteria->params = array(':idUser'=>$_GET['idUser']);
+                $criteria->addCondition('t.public = :public');
+                $criteria->params[':public'] = 1;
+
+                $userLists = Userlist::model()->with('userListContents','userListContents.truth','userListContents.dare','userListContents.truth.category','userListContents.dare.category')->findAll($criteria);
+                $friends = CHtml::listData(Friend::getFriends(Yii::app()->user->getId()),'idUser','username');
+
+                $this->render('userLists',array('userlists'=>$userLists,'friends'=>$friends,'idUser'=>$_GET['idUser']));	
+            }
+            else
+                throw new CHttpException(404,'The page cannot be found.');
 	}
 
         
@@ -495,8 +644,8 @@ class UserController extends MyController
                 $challenge->createDate = date('Y-m-d, H:i:s');
                 $challenge->private = $_POST['private'] == 'true' ? 1 : 0;
                 $challenge->comment = $_POST['comment'];
-                $challenge->save();
-                echo "SUCCESS";
+                if($challenge->save())
+                    echo "SUCCESS";
             }
 	}
 
@@ -511,8 +660,8 @@ class UserController extends MyController
                     $challenge->answer = $_POST['answer'];
                     $challenge->finishDate = date('Y-m-d, H:i:s');
                     $challenge->status = 1;
-                    $challenge->save();
-                    echo "SUCCESS";
+                    if($challenge->save())
+                        echo "SUCCESS";
                 }
                 if($_POST['type'] == 'Dare' && isset($_POST['pictureName'],$_POST['pictureExtension'],$_POST['answer']) && $challenge->idUserTo == Yii::app()->user->getId())
                 {
@@ -522,8 +671,8 @@ class UserController extends MyController
                     $challenge->status = 1;
                     $challenge->pictureName = $_POST['pictureName'];
                     $challenge->pictureExtension = $_POST['pictureExtension'];
-                    $challenge->save();
-                    echo "SUCCESS";
+                    if($challenge->save())
+                        echo "SUCCESS";
                 }
             }
 	}
@@ -588,7 +737,7 @@ class UserController extends MyController
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('myPage', 'userPage', 'myInformations','myPassword', 'myCoins','deleteCoin','myProfilePicture','myLists','mySettings','myTruths','myDares','sendFriendRequest','myFriends','acceptFriendRequest','declineFriendRequest','myChallenges','acceptChallenge','deleteChallenge','sendChallenge','addUserList','deleteUserList','deleteUserListContent'),
+				'actions'=>array('myPage', 'userPage', 'myInformations','myPassword', 'myCoins','deleteCoin','myProfilePicture','myLists','userLists','mySettings','myTruths','userTruths','myDares','userDares','sendFriendRequest','myFriends','userFriends','acceptFriendRequest','declineFriendRequest','myChallenges','userChallenges','acceptChallenge','deleteChallenge','sendChallenge','addUserList','deleteUserList','deleteUserListContent'),
 				'users'=>array('@'),
 			),
 			array('deny',  // deny all users

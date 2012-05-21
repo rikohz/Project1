@@ -64,14 +64,14 @@ $(function() {
     <!--*******************-->
     
     <div style="margin-bottom:15px; margin-top:10px;">
-        <a style="display:block;" href="index.php?r=user/myFriends">See Friends</a>      
+        <a style="display:block;" href="index.php?r=user/userFriends&idUser=<?php echo $user->idUser; ?>">See Friends</a>      
         <a style="display:block;" href="index.php?r=user/myMessages">Send Message</a>
-        <a style="display:block;" href="index.php?r=user/myChallenges">See Challenges</a>
+        <a style="display:block;" href="index.php?r=user/userChallenges&idUser=<?php echo $user->idUser; ?>">See Challenges</a>
         <a style="display:block;" href="index.php?r=user/myChallenges">Send Challenge</a>
-        <a style="display:block;" href="index.php?r=user/myAlbums">See Albums</a>
-        <a style="display:block;" href="index.php?r=user/myTruths">See Truths</a>
-        <a style="display:block;" href="index.php?r=user/myDares">See Dares</a>
-        <a style="display:block;" href="index.php?r=user/myLists">See Lists</a>
+        <a style="display:block;" href="index.php?r=user/userAlbums&idUser=<?php echo $user->idUser; ?>">See Albums</a>
+        <a style="display:block;" href="index.php?r=user/userTruths&idUser=<?php echo $user->idUser; ?>">See Truths</a>
+        <a style="display:block;" href="index.php?r=user/userDares&idUser=<?php echo $user->idUser; ?>">See Dares</a>
+        <a style="display:block;" href="index.php?r=user/userLists&idUser=<?php echo $user->idUser; ?>">See Lists</a>
         <a style="display:block;" href="#" onClick="sendFriendRequest()">Add Friend</a>
     </div>
     
