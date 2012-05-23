@@ -65,14 +65,13 @@ $(function() {
     
     <div style="margin-bottom:15px; margin-top:10px;">
         <a style="display:block;" href="index.php?r=user/userFriends&idUser=<?php echo $user->idUser; ?>">See Friends</a>      
-        <a style="display:block;" href="index.php?r=user/myMessages">Send Message</a>
+        <a <?php echo Yii::app()->user->isGuest ? "onclick='return false'" : ""; ?> style="display:block;" href="index.php?r=user/myMessages">Send Message</a>
         <a style="display:block;" href="index.php?r=user/userChallenges&idUser=<?php echo $user->idUser; ?>">See Challenges</a>
-        <a style="display:block;" href="index.php?r=user/myChallenges">Send Challenge</a>
         <a style="display:block;" href="index.php?r=user/userAlbums&idUser=<?php echo $user->idUser; ?>">See Albums</a>
         <a style="display:block;" href="index.php?r=user/userTruths&idUser=<?php echo $user->idUser; ?>">See Truths</a>
         <a style="display:block;" href="index.php?r=user/userDares&idUser=<?php echo $user->idUser; ?>">See Dares</a>
         <a style="display:block;" href="index.php?r=user/userLists&idUser=<?php echo $user->idUser; ?>">See Lists</a>
-        <a style="display:block;" href="#" onClick="sendFriendRequest()">Add Friend</a>
+        <a <?php echo Yii::app()->user->isGuest ? "onclick='return false'" : ""; ?> style="display:block;" href="#" onClick="sendFriendRequest()">Add Friend</a>
     </div>
     
     <!--*****************-->
@@ -99,7 +98,7 @@ $(function() {
                     echo isset($user->district)? " - " . $user->district->name : "" ; 
                 ?>
             </div>
-            <div><?php $myFunctions = new MyFunctions(); echo isset($user->birthDate) ? $myFunctions->getAge($user->birthDate) : ''; ?></div>
+            <div><?php echo isset($user->birthDate) ? MyFunctions::getAge($user->birthDate) : ''; ?></div>
             <div style="margin-top:10px;"><?php echo MyFunctions::getTruthRankName($user->scoreTruth->score); ?></div>
             <div id="progressBarTruth" style="width:100px; height:10px; margin-bottom:10px;"></div>
             <div><?php echo MyFunctions::getDareRankName($user->scoreDare->score); ?></div>
@@ -149,13 +148,15 @@ $(function() {
     <!--******-->
     <?php $this->widget('UserWallWidget',
             array(
-                'idCurrentUser'=>Yii::app()->user->getId(),
+                'idCurrentUser'=>Yii::app()->user->isGuest ? null : Yii::app()->user->getId(),
                 'idWallOwner'=>$user->idUser,
-                'filterLevel'=>Yii::app()->user->getLevel(),
+                'filterLevel'=>Yii::app()->user->isGuest ? 1 : Yii::app()->user->getLevel(),
                 'withVotes'=>1,
                 'withFavourites'=>1,
                 'withComments'=>1,
-                'withSendChallenge'=>1
+                'withSendChallenge'=>1,
+                'withFormMessage'=>Friend::areFriendsOrFriendRequest($user->idUser,Yii::app()->user->getId(),1),
+                'withWallMessages'=>Friend::areFriendsOrFriendRequest($user->idUser,Yii::app()->user->getId(),1)
                 )); ?>
             
 

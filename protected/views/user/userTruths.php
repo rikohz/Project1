@@ -10,7 +10,7 @@ function selectCategory(dropDownList)
 <?php
 $this->pageTitle=Yii::app()->name . ' - User Truths';
 $this->breadcrumbs=array(
-        'User Page'=>array("user/userPage&idUser=$idUser"),
+        User::getUsernameFromId($idUser) . " Page"=>array("user/userPage&idUser=$idUser"),
 	'User Truths',
 );
 ?>

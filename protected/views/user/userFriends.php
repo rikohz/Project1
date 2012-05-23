@@ -13,6 +13,7 @@ function selectGender(dropDownList)
 <?php
 $this->pageTitle=Yii::app()->name . ' - User Friends';
 $this->breadcrumbs=array(
+        User::getUsernameFromId($idUser) . " Page"=>array("user/userPage&idUser=$idUser"),
 	'User Friends',
 );
 ?>

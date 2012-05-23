@@ -118,7 +118,7 @@ class Friend extends CActiveRecord
                 $criteria->addCondition("accepted = $friendStatus"); 
             $criteria->params[":idUserFrom"] = $idUser1;
             $criteria->params[":idUserTo"] = $idUser2;
-            return Friend::model()->exists($criteria);
+            return Friend::model()->exists($criteria) || ($idUser1 === $idUser2);
         }
 
         

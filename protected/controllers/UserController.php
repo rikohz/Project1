@@ -44,9 +44,9 @@ class UserController extends MyController
 	{
             if(isset($_GET['idUser']))
             {
-                //User Score
+                //Get user infos
                 $user = User::model()->with('province','city','district','scoreTruth','scoreDare')->findByPk($_GET['idUser']);
-
+                
                 //Get the scores of the User
                 $score = array(
                     'scoreTruthVoteIdeas'=>$user->getScoreVoteIdeas('truth'),
@@ -205,7 +205,7 @@ class UserController extends MyController
 
 	public function actionUserTruths()
 	{                
-            if(isset($_GET['idUser']) && Friend::areFriendsOrFriendRequest($_GET['idUser'],Yii::app()->user->getId(),1) == 1)
+            if(isset($_GET['idUser']))
             {
                 $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
 
@@ -240,7 +240,7 @@ class UserController extends MyController
 
 	public function actionUserDares()
 	{                
-            if(isset($_GET['idUser']) && Friend::areFriendsOrFriendRequest($_GET['idUser'],Yii::app()->user->getId(),1) == 1)
+            if(isset($_GET['idUser']))
             {
                 $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
 
@@ -260,7 +260,7 @@ class UserController extends MyController
 
 	public function actionUserFriends()
 	{             
-            if(isset($_GET['idUser']) && Friend::areFriendsOrFriendRequest($_GET['idUser'],Yii::app()->user->getId(),1) == 1)
+            if(isset($_GET['idUser']))
             {
                 //Filter and order criterias
                 if(isset($_GET['idCategory']))
@@ -271,8 +271,8 @@ class UserController extends MyController
                 $friends = Friend::getFriends($_GET['idUser'],1,'username','ASC',Yii::app()->session['idGenderFriends'],Yii::app()->session['idCategoryFriends']);
                 $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
                 $genders = array('0'=>'Female','1'=>'Male');
-
-                $this->render('userFriends',array('categories'=>$categories,'idCategory'=>Yii::app()->session['idCategoryFriends'],'genders'=>$genders,'idGender'=>Yii::app()->session['idGenderFriends'],'friends'=>$friends));
+                
+                $this->render('userFriends',array('categories'=>$categories,'idCategory'=>Yii::app()->session['idCategoryFriends'],'genders'=>$genders,'idGender'=>Yii::app()->session['idGenderFriends'],'friends'=>$friends,'idUser'=>$_GET['idUser']));
             }
             else
                 throw new CHttpException(404,'The page cannot be found.');
@@ -355,7 +355,7 @@ class UserController extends MyController
 
 	public function actionUserChallenges()
 	{                             
-            if(isset($_GET['idUser']) && Friend::areFriendsOrFriendRequest($_GET['idUser'],Yii::app()->user->getId(),1) == 1)
+            if(isset($_GET['idUser']))
             {    
                 //Filter and order criterias
                 if(isset($_GET['idCategory']))
@@ -435,7 +435,7 @@ class UserController extends MyController
 
 	public function actionUserLists()
 	{                   
-            if(isset($_GET['idUser']) && Friend::areFriendsOrFriendRequest($_GET['idUser'],Yii::app()->user->getId(),1) == 1)
+            if(isset($_GET['idUser']))
             {       
                 $criteria = new CDbCriteria;
                 $criteria->addCondition('t.idUser = :idUser');
@@ -450,6 +450,39 @@ class UserController extends MyController
             }
             else
                 throw new CHttpException(404,'The page cannot be found.');
+	}
+
+	public function actionSearchUser()
+	{      
+            $model = new SearchUserForm;
+            if(Yii::app()->request->isAjaxRequest) 
+            { 
+                if(isset($_POST['SearchUserForm']))
+                {
+                    if($_POST['SearchUserForm']['username'] !== '')
+                        $model->username = $_POST['SearchUserForm']['username'];
+                    else
+                        $model->attributes = $_POST['SearchUserForm'];
+                    $criteria = $model->getCriteria();
+                    
+                    //Page manager
+                    $count = User::model()->count($criteria); 
+                    $pages = new CPagination($count);
+                    $pages->pageSize = 10;
+                    $pages->applyLimit($criteria);
+                    
+                    $searchResult = User::model()->findAll($criteria);
+                    
+                    $this->renderPartial('_searchUserResult',array('searchResult'=>$searchResult,'pages'=>$pages));
+                }
+            } 
+            else 
+            {  
+                $provinces = Province::model()->findAll();
+                $provinces = CHtml::listData($provinces,'idProvince','name');
+
+                $this->render('searchUser',array('model'=>$model,'provinces'=>$provinces));
+            }         
 	}
 
         
@@ -625,7 +658,10 @@ class UserController extends MyController
 
 	public function actionSendChallenge()
 	{
-            if(isset($_POST['idUser'], $_POST['private'], $_POST['comment']) && (isset($_POST['idTruth']) || isset($_POST['idDare'])))
+            if(isset($_POST['idUser'], $_POST['private'], $_POST['comment']) 
+                    && (isset($_POST['idTruth']) || isset($_POST['idDare']))
+                    && Friend::areFriendsOrFriendRequest($_POST['idUser'],Yii::app()->user->getId(),1) == 1
+              )
             {  
                 $type = isset($_POST['idTruth']) ? "idTruth" : "idDare";
                 $id = isset($_POST['idTruth']) ? $_POST['idTruth'] : $_POST['idDare'];
@@ -733,11 +769,11 @@ class UserController extends MyController
 	{
 		return array(
 			array('allow',  // allow all users to perform 'index' and 'view' actions
-				'actions'=>array('login','error','logout','register','captcha','updateDistricts','updateCities'),
+				'actions'=>array('login','error','logout','register','captcha','updateDistricts','updateCities','searchUser', 'userPage','userLists','userTruths','userDares','userFriends','userChallenges'),
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('myPage', 'userPage', 'myInformations','myPassword', 'myCoins','deleteCoin','myProfilePicture','myLists','userLists','mySettings','myTruths','userTruths','myDares','userDares','sendFriendRequest','myFriends','userFriends','acceptFriendRequest','declineFriendRequest','myChallenges','userChallenges','acceptChallenge','deleteChallenge','sendChallenge','addUserList','deleteUserList','deleteUserListContent'),
+				'actions'=>array('myPage', 'myInformations','myPassword', 'myCoins','deleteCoin','myProfilePicture','myLists','mySettings','myTruths','myDares','sendFriendRequest','myFriends','acceptFriendRequest','declineFriendRequest','myChallenges','acceptChallenge','deleteChallenge','sendChallenge','addUserList','deleteUserList','deleteUserListContent'),
 				'users'=>array('@'),
 			),
 			array('deny',  // deny all users

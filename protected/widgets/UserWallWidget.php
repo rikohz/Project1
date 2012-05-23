@@ -34,6 +34,10 @@ class UserWallWidget extends CWidget
     public $withFormMessage = 1;
     
     //Bit
+    //Display the number of comments with a link
+    public $withWallMessages = 1;
+    
+    //Bit
     //Display or not the informations from the Wall Owner friends
     public $withFriendsInformations = 0;
     
@@ -59,36 +63,42 @@ class UserWallWidget extends CWidget
             $model->save();
             $model->content='';
         }
+        
+        //Initialiation of the array
+        $wall = array(); 
+        $i = 0;
 
         //Get Wall Messages and add them to the Wall array()
-        $criteria = new CDbCriteria;
-        $criteria->addCondition('t.idUserTo = :idUser');
-        $criteria->params = array(':idUser'=>$this->idWallOwner);
-        $criteria->order = 'createDate DESC';
-        $wallComments = UserWall::model()->with('userFrom','userFrom.scoreTruth','userFrom.scoreDare')->findAll($criteria);
-
-        $wall = array(); $i = 0;
-        foreach($wallComments as $row)
+        if($this->withWallMessages == 1)
         {
-            $wall[$i]['type'] = "WallMessage";
-            $wall[$i]['id'] = $row->idUserWall;
-            $wall[$i]['content'] = $row->content;
-            $wall[$i]['createDate'] = $row->createDate;
-            $wall[$i]['userPicture'] = $row->userFrom->profilePicture . '_mini' . $row->userFrom->profilePictureExtension;
-            $wall[$i]['category'] = null;
-            $wall[$i]['vote'] = null;
-            $wall[$i]['nbFavourite'] = null;
-            $wall[$i]['nbComment'] = null;
-            $wall[$i]['idDisplayUser'] = $row->userFrom->idUser;
-            $wall[$i]['displayUsername'] = $row->userFrom->username;
-            $wall[$i]['pictureChallengeDareMini'] = null;
-            $wall[$i]['pictureChallengeDare'] = null;
-            $wall[$i]['answerChallengeTruth'] = null;
-            $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($row->userFrom->scoreTruth->score);
-            $wall[$i]['rankDare'] = MyFunctions::getDareRankName($row->userFrom->scoreDare->score);
-            $i++;   
-        }
+            $criteria = new CDbCriteria;
+            $criteria->addCondition('t.idUserTo = :idUser');
+            $criteria->params = array(':idUser'=>$this->idWallOwner);
+            $criteria->order = 'createDate DESC';
+            $wallComments = UserWall::model()->with('userFrom','userFrom.scoreTruth','userFrom.scoreDare')->findAll($criteria);
 
+            foreach($wallComments as $row)
+            {
+                $wall[$i]['type'] = "WallMessage";
+                $wall[$i]['id'] = $row->idUserWall;
+                $wall[$i]['content'] = $row->content;
+                $wall[$i]['createDate'] = $row->createDate;
+                $wall[$i]['userPicture'] = $row->userFrom->profilePicture . '_mini' . $row->userFrom->profilePictureExtension;
+                $wall[$i]['category'] = null;
+                $wall[$i]['vote'] = null;
+                $wall[$i]['nbFavourite'] = null;
+                $wall[$i]['nbComment'] = null;
+                $wall[$i]['idDisplayUser'] = $row->userFrom->idUser;
+                $wall[$i]['displayUsername'] = $row->userFrom->username;
+                $wall[$i]['pictureChallengeDareMini'] = null;
+                $wall[$i]['pictureChallengeDare'] = null;
+                $wall[$i]['answerChallengeTruth'] = null;
+                $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($row->userFrom->scoreTruth->score);
+                $wall[$i]['rankDare'] = MyFunctions::getDareRankName($row->userFrom->scoreDare->score);
+                $i++;   
+            }
+        }
+        
         //Get Challenges Notifications and add them to the Wall array()
         $criteria = new CDbCriteria;
         $criteria->addCondition('t.status = 1 AND (t.private = 0 OR (t.idUserFrom = :idCurrentUser OR t.idUserTo = :idCurrentUser))');

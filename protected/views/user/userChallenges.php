@@ -83,7 +83,7 @@ $(function() {
 <?php
 $this->pageTitle=Yii::app()->name . ' - My Challenges';
 $this->breadcrumbs=array(
-        'User Page'=>array("user/userPage&idUser=$idUser"),
+        User::getUsernameFromId($idUser) . " Page"=>array("user/userPage&idUser=$idUser"),
 	'My Challenges',
 );
 ?>

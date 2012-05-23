@@ -129,7 +129,7 @@ class User extends CActiveRecord
                         'district' => array(self::BELONGS_TO, 'District', 'idDistrict'),
 			'province' => array(self::BELONGS_TO, 'Province', 'idProvince'),
 			'city' => array(self::BELONGS_TO, 'City', 'idCity'),
-			'level' => array(self::HAS_ONE, 'Verifidentity', 'idUser','on'=>'level.serialNumber = (SELECT serialNumber FROM verifidentity WHERE idUser=user.idUser ORDER BY level DESC LIMIT 1)'),
+			'level' => array(self::HAS_ONE, 'Verifidentity', 'idUser','on'=>'level.serialNumber = (SELECT serialNumber FROM verifidentity WHERE idUser=t.idUser ORDER BY level DESC LIMIT 1)'),
 			'levelUserFrom' => array(self::HAS_ONE, 'Verifidentity', 'idUser','on'=>'levelUserFrom.serialNumber = (SELECT serialNumber FROM verifidentity WHERE idUser=levelUserFrom.idUser ORDER BY level DESC LIMIT 1)'),
 			'levelUserTo' => array(self::HAS_ONE, 'Verifidentity', 'idUser','on'=>'levelUserTo.serialNumber = (SELECT serialNumber FROM verifidentity WHERE idUser=levelUserTo.idUser ORDER BY level DESC LIMIT 1)'),
 		);
@@ -312,7 +312,6 @@ class User extends CActiveRecord
             return $result;
         }
          
-        
        /**
          * Returns the Truth score of the User $idUser related to the votes of his/her submitted ideas
 	 * @return array()
@@ -538,6 +537,10 @@ class User extends CActiveRecord
             return $result;
         }
         
+        /**
+         * This function returns an array with the idUser of the instanced User Friends
+	 * @return array(idUser)
+	 */
         public function getIdFriends()
         {
             $friendsTo = Friend::model()->findAll(array('select' => 'idUserTo','condition'=>'idUserFrom=:idUser and accepted=1','params'=>array(':idUser'=>$this->idUser))); 
@@ -548,6 +551,17 @@ class User extends CActiveRecord
             foreach($friendsFrom as $row)
                 $friends[] = $row->idUserFrom;
             return $friends;
+        }
+        
+        /**
+         * This function returns the username of the User using the idUser as parameter
+	 * @return String
+	 */
+        public static function getUsernameFromId($idUser)
+        {
+            $connection = Yii::app()->db; 
+            $command = $connection->createCommand("SELECT username FROM user WHERE idUser = $idUser");
+            return $command->queryScalar();
         }
        
 }

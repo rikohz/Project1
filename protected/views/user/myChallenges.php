@@ -294,15 +294,15 @@ $this->breadcrumbs=array(
 <!--************-->
 <table width="100%" style="border-spacing:5px;">
     <tr>
-        <td width="8%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
-        <td width="3%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
-        <td width="3%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
-        <td width="3%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
-        <td width="5%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
-        <td width="10%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
-        <td width="30%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
-        <td width="35%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
-        <td width="3%" style="font-weight:bold; font-size:1.2em;">&nbsp;</td>
+        <td width="8%">&nbsp;</td>
+        <td width="3%">&nbsp;</td>
+        <td width="3%">&nbsp;</td>
+        <td width="3%">&nbsp;</td>
+        <td width="5%">&nbsp;</td>
+        <td width="10%">&nbsp;</td>
+        <td width="30%">&nbsp;</td>
+        <td width="35%">&nbsp;</td>
+        <td width="3%">&nbsp;</td>
     </tr>
     <?php foreach($challenges as $row): ?>
         <tr style="background-color: <?php echo $row->status == 1 ? '#c1fb9e' : '#ffd4d5'; ?>">

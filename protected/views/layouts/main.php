@@ -43,6 +43,7 @@
 			'items'=>array(
 				array('label'=>Yii::t('base','Home'), 'url'=>array('/site/index')),
 				array('label'=>Yii::t('base','Test'), 'url'=>array('/site/test')),
+				array('label'=>Yii::t('base','Search User'), 'url'=>array('/user/searchUser')),
 				array('label'=>Yii::t('base','Dares'), 'url'=>array('/dare/dare')),
 				array('label'=>Yii::t('base','Truths'), 'url'=>array('/truth/truth')),
 				array('label'=>Yii::t('base','Submit Idea'), 'url'=>array('/site/submitIdea')),
