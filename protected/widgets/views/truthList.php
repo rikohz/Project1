@@ -1,4 +1,5 @@
 <script type="text/javascript" src="<?php echo Yii::app()->request->baseUrl; ?>/script/jquery-ui-1.8.18.custom.min.js"></script>
+<script type="text/javascript" src="<?php echo Yii::app()->request->baseUrl; ?>/script/jquery.yii.js"></script>
 <script type="text/javascript">
 $(function() {
 
@@ -10,12 +11,15 @@ $(function() {
              
         var id = $(this).attr("id").substring(2, $(this).attr("id").length);
         var name = $(this).attr("name");
-        var dataString = 'idTruth='+ id + '&vote=' + name;    
-        var parent = $(this);
+        var dataString = 'idTruth='+ id + '&vote=' + name;  
+        
+        var me = $(this); 
+        var background = $(this).css("background-image");
+        
+        me.css("background", "url(/TruthOrDare/images/loading.gif) no-repeat");
+        me.css("background-size","100% 100%"); 
 
-        var tampon = $(this).html();
-        var compteur = document.getElementById('nbVoteT' + id);
-        $(this).fadeIn(200).html('<img src="/TruthOrDare/images/loading.gif" />');
+        var compteur = $('#nbVoteT' + id);
 
         $.ajax({
             type: "POST",
@@ -25,16 +29,14 @@ $(function() {
 
             success: function(html)
             {
-                compteur.innerHTML = html;
-                parent.html(tampon);
+                compteur.html(html);
+                me.css("background", background);
             } 
         }); 
         return false;
     });
 
     //Favourite Management
-    var idTruth = null;
-    $( "#dialog:ui-dialog" ).dialog( "destroy" );
     $( "#dialog-form-favourite-truth" ).dialog({
             autoOpen: false,
             height: 210,
@@ -137,68 +139,79 @@ $(function() {
 <!--************-->
 <input type="hidden" value="<?php echo Yii::app()->user->isGuest; ?>" id="isGuestTruth" />
 <?php foreach ($datas as $row) { ?>
-    
-    <!-- #Ref of Truth and category -->
-    <span>
-        <?php echo '#' . $row['idTruth']; ?>&nbsp;&nbsp;-&nbsp;&nbsp;
-        <?php echo $row->category->category; ?>
-    </span>
-
-    <!-- Like and Dislike -->
-    <?php if(($this->withVotes) && ($row->user->idUser !== $this->idUser)){ ?>
-        <a href="" class="voteTruth" style="background-image: url(/TruthOrDare/images/iLike.png);" id="VT<?php echo $row['idTruth']; ?>" name="up">&nbsp;</a>
-        <a href="" class="voteTruth" style="background-image: url(/TruthOrDare/images/iDislike.png);" id="VT<?php echo $row['idTruth']; ?>" name="down">&nbsp;</a>
-    <?php } ?>
-    <span id="nbVoteT<?php echo $row['idTruth']; ?>"><?php echo $row['voteUp'] - $row['voteDown']; ?></span>
-
-    
-    <!-- Favourite -->
-    <?php if($this->withFavourites){?>
-        <div class='addFavouriteTruth' 
-             <?php if($row->nbFavourite > 0){echo " style='background-image: url(/TruthOrDare/images/favouriteChosen.png);' ";} ?> 
-             id='FT<?php echo $row->idTruth; ?>'>&nbsp;
-        </div>
-    <?php } ?>
-    
-    <!-- Challenge -->
-    <?php if($this->withSendChallenge){ ?>
-        &nbsp;&nbsp;<span class='challengeTruth' id='CT<?php echo $row->idTruth; ?>'><a>Challenge</a></span>
-    <?php } ?>
-    
-    <!-- Comments -->
-    <?php if($this->withComments){ ?>
-        &nbsp;&nbsp;<a href="index.php?r=site/comment&idTruth=<?php echo $row['idTruth']; ?>">See the <?php echo $row->nbComment; ?> comments</a>
-    <?php } ?>
-        
-    <!-- Author informations and Date -->
-    <span style="float: right;">
-        <?php echo Yii::app()->dateFormatter->format('yyyy-MM-dd',$row['dateSubmit']); ?>
-    </span>
-    <?php if($this->withAuthorInformations){ ?>
-        <span style="float: right;">
-            <?php echo $row->anonymous == 1 ? 'Anonymous' : "<a href='index.php?r=user/userPage&idUser=" . $row->user->idUser . "'>" . $row->user->username . "</a>"; ?>&nbsp;&nbsp;-&nbsp;&nbsp;
-            <?php echo MyFunctions::getTruthRankName($row->user->scoreTruth->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
-            <?php echo MyFunctions::getDareRankName($row->user->scoreDare->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
+    <div style="height:26px; line-height: 26px;">
+        <!-- #Ref of Truth and category -->
+        <span>
+            <?php echo '#' . $row['idTruth']; ?>&nbsp;&nbsp;-&nbsp;&nbsp;
+            <?php echo $row->category->category; ?>
         </span>
-    <?php } ?>
-    
+
+        <!-- Author informations and Date -->
+        <span>
+            &nbsp;&nbsp;-&nbsp;&nbsp;
+            <?php echo $row->anonymous == 1 ? 'Anonymous' : "<a href='index.php?r=user/userPage&idUser=" . $row->user->idUser . "'>" . $row->user->username . "</a>"; ?>
+            <?php if($this->withAuthorScores){ ?>
+                <?php echo MyFunctions::getTruthRankName($row->user->scoreTruth->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
+                <?php echo MyFunctions::getDareRankName($row->user->scoreDare->score); ?>&nbsp;&nbsp;-&nbsp;&nbsp;
+            <?php } ?>
+        </span>
+
+        <!-- Favourite -->
+        <?php if($this->withFavourites){?>
+            <div class='addFavouriteTruth' 
+                style='float:right;<?php if($row->nbFavourite > 0){echo "background-image: url(/TruthOrDare/images/favouriteChosen.png);";} ?>'
+                id='FT<?php echo $row->idTruth; ?>' title="Add to your favorites!">&nbsp;
+            </div>
+        <?php } ?>
+
+        <!-- Comments -->
+        <?php if($this->withComments){ ?>
+            <span style="float:right;font-size:0.8em;">
+                <a href="index.php?r=site/comment&idTruth=<?php echo $row['idTruth']; ?>" style="text-decoration:none;">
+                    <img src="/TruthOrDare/images/comment.png" width="24px" height="24px" title="Add/See comments" />
+                    <?php echo $row->nbComment; ?>
+                </a>
+            </span>
+        <?php } ?>
+
+        <!-- Challenge -->
+        <span style="float:right; font-size:0.8em;">
+            <?php if($this->withSendChallenge){ ?>
+                <img  class='challengeTruth' id='CT<?php echo $row->idTruth; ?>' src="/TruthOrDare/images/challenge.png" width="24px" height="24px" style="cursor:pointer;" title="Challenge someone!" />
+            <?php } ?>
+            <a href="index.php?r=challenge/challenge&idTruth=<?php echo $row['idTruth']; ?>" style="text-decoration:none;">
+                <img  class='challengeTruth' src="/TruthOrDare/images/seeChallenge.png" width="24px" height="24px" style="cursor:pointer;" title="See people who realized this challenge!" />
+                <?php echo $row->nbChallenge; ?>
+            </a>
+        </span>
+
+        <!-- Like and Dislike -->
+        <span style="float:right;">
+            <span id="nbVoteT<?php echo $row['idTruth']; ?>" style="padding:3px;font-weight: bold;border-radius:3px;background-color:#C9E0ED;color:<?php echo ($row['voteUp'] - $row['voteDown']) >= 0 ? 'green' : 'red'; ?>"><?php echo ($row['voteUp'] - $row['voteDown']) >= 0 ? '+' : ''; ?><?php echo $row['voteUp'] - $row['voteDown']; ?></span>
+            <?php if(($this->withVotes) && ($row->user->idUser !== $this->idUser)){ ?>
+                <a href="" class="voteTruth" style="background: url(/TruthOrDare/images/iLike.png); text-decoration: none;" id="VT<?php echo $row['idTruth']; ?>" name="up">&nbsp;</a>
+                <a href="" class="voteTruth" style="background: url(/TruthOrDare/images/iDislike.png); text-decoration: none" id="VT<?php echo $row['idTruth']; ?>" name="down">&nbsp;</a>
+            <?php } ?>
+        </span>  
+
+    </div>
     <!-- Truth -->
     <div class="boxTruthOrDare">
-        <?php echo $row['truth']; ?>
+        <div style="margin:10px;"><?php echo $row['truth']; ?></div>
      </div> 
     
 <?php } ?>
-<br />
-
 
 <!--************-->
 <!-- Link Pager -->
 <!--************-->
 <div style="text-align: center;">
-    <?php $this->widget('CLinkPager', array(
+    <?php $this->widget('AjaxFormCLinkPager', array(
         'pages' => $pages,
         'maxButtonCount'=>10,
         'header'=>"",
+        'idDivUpdate'=>$this->idDivUpdate,
+        'idForm'=>$this->idFormCriteria
     )) ?>
 </div>
 
@@ -207,11 +220,11 @@ $(function() {
 <!-- Dialog box to choose which list to add favourite -->
 <!--**************************************************-->
 <?php if($this->withFavourites){ ?>
-    <div id="dialog-form-favourite-truth" style="font-size:0.8em;" title="Choose your list">
+    <div id="dialog-form-favourite-truth" style="font-size:0.8em; display: none;" title="Choose your list">
         <?php 
             echo CHtml::dropDownList('FavouriteTruth_UserLists',null, $userLists, array('prompt'=>'Select List','style'=>'width:330px;','id'=>'FavouriteTruth_idUserList'));
             if($userLists == null)
-                {echo "<br /><br /><p style='color:red;'>You haven't created any list yet, please click <a href='index.php?r=user/favourite'>here</a></p>";} 
+                {echo "<br /><br /><p style='color:red;'>You haven't created any list yet, please click <a href='index.php?r=user/myLists'>here</a></p>";} 
         ?>
     </div>
 <?php } ?>
@@ -221,7 +234,7 @@ $(function() {
 <!-- Dialog box to send Challenge -->
 <!--******************************-->
 <?php if($this->withSendChallenge){ ?>
-    <div id="dialog-form-challenge-truth" style="font-size:0.8em;" title="Send Challenge">
+    <div id="dialog-form-challenge-truth" style="font-size:0.8em; display: none;" title="Send Challenge">
         <?php echo CHtml::dropDownList('FriendTruth_username',null, $friends, array('prompt'=>'Select Friend','style'=>'width:330px;','id'=>'ChallengeTruth_idUser')); ?>
         <br />
         Comment:
@@ -233,11 +246,11 @@ $(function() {
         <?php endif; ?>
     </div>
 
-    <div id="dialog-form-challenge-truth-sent">
+    <div id="dialog-form-challenge-truth-sent" style="display: none;">
         <p>Challenge sent!</p>
     </div>
 
-    <div id="dialog-form-challenge-truth-alreadyexists">
+    <div id="dialog-form-challenge-truth-alreadyexists" style="display: none;">
         <p>This user already played this challenge or has it in his/her waiting list!</p>
     </div>
 <?php } ?>

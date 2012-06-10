@@ -132,7 +132,7 @@ $this->breadcrumbs=array(
                     <span>Waiting...</span>
                 <?php else: ?>
                     <?php if($row->dare === null): ?>
-                        <span id="<?php echo $row->truth === null ? 'DA' . $row->dare->idDare : 'TR' . $row->truth->idTruth; ?>" class='answerTruth' style='cursor:pointer;display:block;height:50px;overflow:hidden;'><?php echo $row->answer; ?></span>
+                        <span id="<?php echo 'TR' . $row->truth->idTruth; ?>" class='answerTruth' style='cursor:pointer;display:block;height:50px;overflow:hidden;'><?php echo $row->answer; ?></span>
                     <?php else: ?>
                         <a id="<?php echo $row->idChallenge; ?>" class="challengePicture" title="<?php echo "Dare #" . $row->dare->idDare . " (" . $row->dare->category->category . "): " . $row->dare->dare ?>" href="userImages/challenge_original/<?php echo $row->pictureName . '_original' . $row->pictureExtension; ?>"><img src="userImages/challenge_mini/<?php echo $row->pictureName . '_mini' . $row->pictureExtension; ?>" width="48px" height="48px" /></a>
                     <?php endif; ?>

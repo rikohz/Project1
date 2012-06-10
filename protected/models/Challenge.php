@@ -36,6 +36,10 @@ class Challenge extends CActiveRecord
         public $scoreYear;
         public $pictureUploader;
     
+        //Need to fetch results
+        public $nbFavourite;
+        public $nbComment;
+        public $nbChallenge;
 	/**
 	 * Returns the static model of the specified AR class.
 	 * @param string $className active record class name.

@@ -8,17 +8,40 @@ class TruthController extends MyController
 //      <!--****************************-->
 
 	public function actionTruth()
-	{                
-            $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
-      
-            //Filter and order criterias
-            if(isset($_GET['idCategory']))
-                Yii::app()->session['idCategory'] = $_GET['idCategory']; 
-            if(isset($_GET['order']))
-                Yii::app()->session['order'] = $_GET['order']; 
+	{     
+            $model = new SearchTruthForm;
             
-            $this->render('truth',array('categories'=>$categories,'order'=>Yii::app()->session['order'],'idCategory'=>Yii::app()->session['idCategory']));
+            //If we selected some Search Criteria
+            if(isset($_POST['SearchTruthForm'])) 
+            { 
+                if(isset($_POST['SearchTruthForm']['idTruth']) && $_POST['SearchTruthForm']['idTruth'] !== '')
+                    $model->idTruth = $_POST['SearchTruthForm']['idTruth'];
+                else
+                    $model->attributes = $_POST['SearchTruthForm'];
+            }                
+            
+            //If we are using AJAX Update Panel
+            if(Yii::app()->request->isAjaxRequest)
+                $this->renderPartial('_searchTruthResult',array('model'=>$model));
+            else
+            {
+                $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+                $this->render('truth',array('model'=>$model,'categories'=>$categories));
+            }
 	}
+
+//	public function actionTruth()
+//	{                
+//            $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+//      
+//            //Filter and order criterias
+//            if(isset($_GET['idCategory']))
+//                Yii::app()->session['idCategory'] = $_GET['idCategory']; 
+//            if(isset($_GET['order']))
+//                Yii::app()->session['order'] = $_GET['order']; 
+//            
+//            $this->render('truth',array('categories'=>$categories,'order'=>Yii::app()->session['order'],'idCategory'=>Yii::app()->session['idCategory']));
+//	}
          
         
 //      <!--********************************-->

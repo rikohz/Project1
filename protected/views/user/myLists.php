@@ -279,8 +279,8 @@ function updateStyle(){
                 <?php $idName = $content->truth === null ? "idDare" : "idTruth"; ?>
                 <div style="margin-bottom:20px;">
                     <div style="display:inline-block;"><?php echo ucfirst($type); ?> #<?php echo $content->$type->$idName; ?> - <?php echo $content->$type->category->category; ?></div>
-                    <div style="float:right;"><a class="deleteUserListContent" id="<?php echo $content->idUserListContent; ?>">Delete</a></div>
-                    <div style="float:right; margin-right: 30px;"><a class='challenge' id='C<?php echo $initial . $content->$type->$idName; ?>'>Challenge</a></div>
+                    <div style="float:right;"><a class="deleteUserListContent" style="cursor:pointer;" id="<?php echo $content->idUserListContent; ?>">Delete</a></div>
+                    <div style="float:right; margin-right: 30px;"><a style="cursor:pointer;" class='challenge' id='C<?php echo $initial . $content->$type->$idName; ?>'>Challenge</a></div>
                     <div style="background-color: #DDD"><?php echo $content->$type->$type; ?></div>
                 </div>
             <?php endforeach; ?>

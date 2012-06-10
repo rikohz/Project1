@@ -20,6 +20,8 @@ class UserIdentity extends CUserIdentity
         else
         {
             $this->_idUser=$record->idUser;
+            $record->lastLoginDate = date('Y-m-d, H:i:s');
+            $record->save();
             $this->errorCode=self::ERROR_NONE;
         }
         return !$this->errorCode;

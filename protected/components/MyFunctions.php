@@ -26,7 +26,17 @@ class MyFunctions {
            $year_diff--;
        return $year_diff;
    }
-        
+   
+    /**
+    * Returns the number of days between date1 and date2
+    * @return Int
+    */
+    public static function getNbDaysBetweenDates($date1, $date2)  
+    {
+        $s = strtotime($date2)-strtotime($date1);
+        $d = intval($s/86400)+1;  
+        return "$d";
+    } 
    
     /**
     * Returns URL with the $paramNom parameter added using the $paramValeur value

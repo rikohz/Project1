@@ -2,7 +2,7 @@
 function selectCategory(dropDownList)
 {
     var value = dropDownList.options[dropDownList.selectedIndex].value;
-    window.location = "index.php?r=truth/myTruths&idCategory=" + value;
+    window.location = "index.php?r=user/myTruths&idCategory=" + value;
 }
 </script>
  
@@ -24,7 +24,7 @@ $this->breadcrumbs=array(
     <span style="float:left;margin-left:20px;"><a href="<?php echo Yii::app()->request->getUrl(); ?>&order=t.dateSubmit">Submit Date</a></span>
     <span style="float:left;margin-left:20px;"><a href="<?php echo Yii::app()->request->getUrl(); ?>&order=t.voteUp-t.voteDown">Popularity</a></span>
     <span style="float:left;margin-left:20px;"><a href="<?php echo Yii::app()->request->getUrl(); ?>&order=nbComment">Nb of Comments</a></span>
-    <span style="float:right;"><?php echo CHtml::dropDownList('category',$idCategory,$categories, array('empty' => 'All','id'=>'category','onChange'=>'selectCategory(this)')); ?></span>
+    <span style="float:right;"><?php echo CHtml::dropDownList('category',$model->idCategory,$categories, array('empty' => 'All','id'=>'category','onChange'=>'selectCategory(this)')); ?></span>
 </div>
 
 
@@ -34,14 +34,11 @@ $this->breadcrumbs=array(
 <?php $this->widget('TruthList',
         array(
             'idUser'=>Yii::app()->user->getId(),
-            'idUserFilter'=>Yii::app()->user->getId(),
             'filterLevel'=>Yii::app()->user->getLevel(),
-            'idCategory'=>$idCategory,
-            'order'=>$order,
+            'model'=>$model,
             'withVotes'=>1,
             'withFavourites'=>1,
-            'withComments'=>1,
-            'withAuthorInformations'=>0
+            'withComments'=>1
             )); ?>
 
 

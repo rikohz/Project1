@@ -18,6 +18,7 @@
  * @property integer $idProvince
  * @property integer $idCity
  * @property integer $idDistrict
+ * @property string $lastLoginDate 
 
  *
  * The followings are the available model relations:
@@ -68,7 +69,7 @@ class User extends CActiveRecord
 		// will receive user inputs.
 		return array(
                     
-                        //Common
+            //Common
 			array('username, email, password, registrationDate, gender', 'required'),
 			array('username, email, conf_email, password, conf_password', 'length', 'max'=>64),
 			array('username', 'length', 'min'=>3),
@@ -77,37 +78,37 @@ class User extends CActiveRecord
 			array('serialNumber, verifCode', 'numerical'),
 			array('email', 'unique','message' => "This email already has an account!",'className'=>'user'),
 			array('username', 'unique','message' => "Sorry, this username has been used already!",'className'=>'user'),
-			array('verifyCode', 'captcha', 'allowEmpty'=>!extension_loaded('gd')),
-                        array('birthDate','safe'),
+            array('birthDate','safe'),
                     
-                        //Register
-                        array('serialNumber, conf_email, verifCode, validation, conf_password','required','on'=>'register'),
-                        array('conf_email', 'compare', 'compareAttribute'=>'email','on'=>'register'),
+            //Register
+            array('serialNumber, conf_email, verifCode, validation, conf_password','required','on'=>'register'),
+            array('conf_email', 'compare', 'compareAttribute'=>'email','on'=>'register'),
 			array('verifCode', 'verifyCoinPassword','on'=>'register'),
 			array('serialNumber', 'verifyUnicitySerialNumber','on'=>'register'),
-                        array('conf_password', 'compare', 'compareAttribute'=>'password','on'=>'register'),
-                        array('pictureUploader', 'file', 'types'=>'jpg, jpeg, gif, png', 'maxSize'=> '2097152', 'tooLarge'=>'This file is too big...', 'wrongType'=>'Wrong format of file...', 'allowEmpty'=>true,'on'=>'register'),
-                        array('idProvince, idCity, idDistrict, profilePictureExtension', 'safe','on'=>'register'),
+            array('conf_password', 'compare', 'compareAttribute'=>'password','on'=>'register'),
+            array('pictureUploader', 'file', 'types'=>'jpg, jpeg, gif, png', 'maxSize'=> '2097152', 'tooLarge'=>'This file is too big...', 'wrongType'=>'Wrong format of file...', 'allowEmpty'=>true,'on'=>'register'),
+            array('idProvince, idCity, idDistrict, profilePictureExtension', 'safe','on'=>'register'),
 			array('serialNumber', 'exist','message' => "Sorry, this Serial Number does not exist",'className'=>'verifIdentity','on'=>'register'),
-                        array('profilePicture, profilePictureExtension','safe','on'=>'register'),
-                    
-                        //Update User
-                        array('conf_email','required','on'=>'updateUser'),
-                        array('conf_email', 'compare', 'compareAttribute'=>'email','on'=>'updateUser'), 
-                        array('idProvince, idCity, idDistrict', 'safe','on'=>'updateUser'),
-                    
-                        //Change Password
-                        array('newPassword, conf_newPassword','required','on'=>'changePassword'),
-                        array('conf_newPassword', 'compare', 'compareAttribute'=>'newPassword','on'=>'changePassword'),
-                    
-                        //Update Coins
-                        array('serialNumber, verifCode','required','on'=>'addCoin'),
+            array('profilePicture, profilePictureExtension','safe','on'=>'register'),
+			array('verifyCode', 'captcha', 'allowEmpty'=>!extension_loaded('gd'),'on'=>'register'),
+
+            //Update User
+            array('conf_email','required','on'=>'updateUser'),
+            array('conf_email', 'compare', 'compareAttribute'=>'email','on'=>'updateUser'), 
+            array('idProvince, idCity, idDistrict', 'safe','on'=>'updateUser'),
+
+            //Change Password
+            array('newPassword, conf_newPassword','required','on'=>'changePassword'),
+            array('conf_newPassword', 'compare', 'compareAttribute'=>'newPassword','on'=>'changePassword'),
+
+            //Update Coins
+            array('serialNumber, verifCode','required','on'=>'addCoin'),
 			array('verifCode', 'verifyCoinPassword','on'=>'addCoin'),
 			array('serialNumber', 'exist','message' => "Sorry, this Serial Number does not exist",'className'=>'verifIdentity','on'=>'addCoin'),
                     
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('profilePicture, idUser, username, email, password, registrationDate, serialNumber, gender, validation, idProvince, idCity, idDistrict', 'safe', 'on'=>'search'),
+			array('profilePicture, idUser, username, email, password, birthDate,registrationDate, serialNumber, gender, validation, idProvince, idCity, idDistrict,lastLoginDate', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -124,9 +125,9 @@ class User extends CActiveRecord
 			'scoreDare' => array(self::HAS_ONE, 'Scoredare', 'idUser'),
 			'scoreTruth' => array(self::HAS_ONE, 'Scoretruth', 'idUser'),
 			'truths' => array(self::HAS_MANY, 'Truth', 'idUser'),
-                        'verifidentities' => array(self::HAS_MANY, 'Verifidentity', 'idUser'),
+            'verifidentities' => array(self::HAS_MANY, 'Verifidentity', 'idUser'),
 			'votingdetails' => array(self::HAS_MANY, 'Votingdetail', 'idUser'),
-                        'district' => array(self::BELONGS_TO, 'District', 'idDistrict'),
+            'district' => array(self::BELONGS_TO, 'District', 'idDistrict'),
 			'province' => array(self::BELONGS_TO, 'Province', 'idProvince'),
 			'city' => array(self::BELONGS_TO, 'City', 'idCity'),
 			'level' => array(self::HAS_ONE, 'Verifidentity', 'idUser','on'=>'level.serialNumber = (SELECT serialNumber FROM verifidentity WHERE idUser=t.idUser ORDER BY level DESC LIMIT 1)'),
@@ -146,7 +147,7 @@ class User extends CActiveRecord
 			'email' => 'Email',
 			'password' => 'Password',
 			'registrationDate' => 'Registration Date',
-                        'serialNumber' => 'Serial Number',
+            'serialNumber' => 'Serial Number',
 			'verifyCode'=>'Verification Code',
 			'conf_email' => 'Confirm Email',
 			'conf_password' => 'Confirm Password',
@@ -159,6 +160,7 @@ class User extends CActiveRecord
 			'idCity' => 'Choose your City',
 			'idDistrict' => 'Choose your District',
 			'birthDate' => 'Birth Date',
+			'location' => 'Location',
 		);
 	}
 
@@ -174,18 +176,19 @@ class User extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('idUser',$this->idUser,true);
-                $criteria->compare('gender',$this->gender);
+        $criteria->compare('gender',$this->gender);
 		$criteria->compare('username',$this->username,true);
 		$criteria->compare('email',$this->email,true);
 		$criteria->compare('password',$this->password,true);
 		$criteria->compare('birthDate',$this->birthDate,true);
 		$criteria->compare('registrationDate',$this->registrationDate,true);
-                $criteria->compare('serialNumber',$this->serialNumber,true);
+        $criteria->compare('serialNumber',$this->serialNumber,true);
 		$criteria->compare('validation',$this->validation,true);
 		$criteria->compare('profilePicture',$this->profilePicture,true);
 		$criteria->compare('idProvince',$this->idProvince);
 		$criteria->compare('idCity',$this->idCity);
 		$criteria->compare('idDistrict',$this->idDistrict);
+		$criteria->compare('lastLoginDate',$this->lastLoginDate,true);
 
 
 		return new CActiveDataProvider($this, array(
@@ -298,10 +301,10 @@ class User extends CActiveRecord
                     
                     //Thumbnail
                     if($image->__get('width') > $image->__get('height'))
-                        $image->resize(50, 50, Image::HEIGHT);
+                        $image->resize(64, 64, Image::HEIGHT);
                     else
-                        $image->resize(50, 50, Image::WIDTH);
-                    $image->crop(50, 50);
+                        $image->resize(64, 64, Image::WIDTH);
+                    $image->crop(64, 64);
                     $image->save($toFileMini);
                     
                     $result = 1;               

@@ -199,7 +199,7 @@ $(document).ready(function() {
 <!-- Form to add Wall Messages -->
 <!--***************************-->
 <?php if($this->withFormMessage == 1): ?>
-    <div style="border:1px black solid;">
+    <div>
         <div class="form">
             <?php $form = $this->beginWidget('CActiveForm', array('id'=>'wall-form')); ?>
             <label style="padding: 0 10px 0 0; margin: 0; display: block;">
@@ -211,12 +211,13 @@ $(document).ready(function() {
     </div>
 <?php endif; ?>
 
+<br />
 
 <!--******-->
 <!-- Wall -->
 <!--******-->
 <input type="hidden" value="<?php echo Yii::app()->user->isGuest; ?>" id="isGuest" />
-<div style="border:1px black solid;">
+<div>
     <?php foreach($wall as $row): ?>
         <div style="display: table; width:100%;">
             <span style="width:50%; display:table-cell; vertical-align: bottom;">
@@ -231,62 +232,78 @@ $(document).ready(function() {
                 <!--*****************-->
                 <?php if($row['type'] == "Truth" || $row['type'] == "Dare"): ?>
                     <?php $ref = substr($row['type'],0,1) . $row['id']; ?>
+                    <div style="height:26px; line-height: 26px;">
 
-                    <!-- Like and Dislike -->
-                    <?php if($this->withVotes && $row['idDisplayUser'] !== $this->idCurrentUser){ ?>
-                        <span style="float:right;" id="nbVote<?php echo $ref; ?>"><?php echo $row['vote']; ?></span>
-                        <a href="" class="voteTruthOrDare" style="background-image: url(/TruthOrDare/images/iDislike.png);" id="V<?php echo $ref; ?>" name="down">&nbsp;</a>
-                        <a href="" class="voteTruthOrDare" style="background-image: url(/TruthOrDare/images/iLike.png);" id="V<?php echo $ref; ?>" name="up">&nbsp;</a>
-                    <?php } ?>
+                        <!-- Favourite -->
+                        <?php if($this->withFavourites){?>
+                            <div class='addFavourite' 
+                                <?php if($row['nbFavourite'] > 0){echo " style='background-image: url(/TruthOrDare/images/favouriteChosen.png);' ";} ?> 
+                                id='F<?php echo $ref; ?>'>&nbsp;
+                            </div>
+                        <?php } ?>
+                        
+                        <!-- Comments -->
+                        <?php if($this->withComments){ ?>
+                            <span style="float:right;font-size:0.8em;">
+                                <a href="index.php?r=site/comment&id<?php echo $row['type'] . "=" . $row['id']; ?>" style="text-decoration:none;">
+                                    <img src="/TruthOrDare/images/comment.png" width="24px" height="24px" title="Add/See comments" />
+                                    <?php echo $row['nbComment']; ?>
+                                </a>
+                            </span>
+                        <?php } ?>
 
-                    <!-- Comments -->
-                    <?php if($this->withComments){ ?>
-                        &nbsp;&nbsp;<a style="margin-right:10px; float:right;" href="index.php?r=site/comment&id<?php echo $row['type'] . "=" . $row['id']; ?>">See the <?php echo $row['nbComment']; ?> comments</a>
-                    <?php } ?>
-
-                    <!-- Favourite -->
-                    <?php if($this->withFavourites){?>
-                        <div class='addFavourite' 
-                             <?php if($row['nbFavourite'] > 0){echo " style='background-image: url(/TruthOrDare/images/favouriteChosen.png);' ";} ?> 
-                             id='F<?php echo $ref; ?>'>&nbsp;
-                        </div>
-                    <?php } ?>
-    
-                    <!-- Challenge -->
-                    <?php if($this->withSendChallenge){ ?>
-                        &nbsp;&nbsp;<span><a class='challenge' id='C<?php echo $ref; ?>'>Challenge</a></span>
-                    <?php } ?>
-                    <br />
-                    <br />
+                        <!-- Challenge -->
+                        <?php if($this->withSendChallenge){ ?>
+                            <span style="float:right; font-size:0.8em;">
+                                <img  class='challenge' id='C<?php echo $ref; ?>' src="/TruthOrDare/images/challenge.png" width="24px" height="24px" style="cursor:pointer;" title="Challenge someone!" />
+                            </span>
+                        <?php } ?>
+                            
+                            
+                        <!-- Like and Dislike -->
+                        <?php if($this->withVotes && $row['idDisplayUser'] !== $this->idCurrentUser){ ?>
+                        <span style="float:right;">
+                            <span id="nbVote<?php echo $ref; ?>" style="padding:3px;font-weight: bold;border-radius:3px;background-color:#C9E0ED;color:<?php echo $row['vote'] >= 0 ? 'green' : 'red'; ?>"><?php echo $row['vote'] >= 0 ? '+' : '-'; ?><?php echo $row['vote']; ?></span>
+                            <a href="" class="voteTruthOrDare" style="background-image: url(/TruthOrDare/images/iLike.png);text-decoration:none;" id="V<?php echo $ref; ?>" name="up">&nbsp;</a>
+                            <a href="" class="voteTruthOrDare" style="background-image: url(/TruthOrDare/images/iDislike.png);text-decoration:none;" id="V<?php echo $ref; ?>" name="down">&nbsp;</a>
+                        </span>
+                        <?php } ?>
+                    </div>
                 <?php endif; ?>
-
                 <!--************-->
                 <!-- Challenges -->
                 <!--************-->
                 <?php if($row['type'] == "ChallengeTruth" || $row['type'] == "ChallengeDare"): ?>
                     <?php $ref = substr($row['type'],0,1) . $row['id']; ?>
+                    <div style="height:26px; line-height: 26px;">
 
-                    <!-- Like and Dislike -->
-                    <?php if($this->withVotes && $row['idDisplayUser'] !== $this->idCurrentUser){ ?>
-                        <span style="float:right;" id="nbVote<?php echo $ref; ?>"><?php echo $row['vote']; ?></span>
-                        <a href="" class="voteChallenge" style="background-image: url(/TruthOrDare/images/iDislike.png);" id="V<?php echo $ref; ?>" name="down">&nbsp;</a>
-                        <a href="" class="voteChallenge" style="background-image: url(/TruthOrDare/images/iLike.png);" id="V<?php echo $ref; ?>" name="up">&nbsp;</a>
-                    <?php } ?>
+                        <!-- Comments -->
+                        <?php if($this->withComments){ ?>
+                            <span style="float:right;font-size:0.8em;">
+                                <a href="index.php?r=site/challengeComment&idChallenge=<?php echo $row['id']; ?>" style="text-decoration:none;">
+                                    <img src="/TruthOrDare/images/comment.png" width="24px" height="24px" title="Add/See comments" />
+                                    <?php //echo $row->nbComment; ?>
+                                </a>
+                            </span>
+                        <?php } ?>
 
-                    <!-- Comments -->
-                    <?php if($this->withComments){ ?>
-                        &nbsp;&nbsp;<a style="margin-right:10px; float:right;" href="index.php?r=site/challengeComment&id<?php echo $row['type'] . "=" . $row['id']; ?>">See the <?php echo $row['nbComment']; ?> comments</a>
-                    <?php } ?>
-                    <br />
-                    <br />
+                        <!-- Like and Dislike -->
+                        <?php if($this->withVotes && $row['idDisplayUser'] !== $this->idCurrentUser){ ?>
+                            <span style="float:right;">
+                                <span id="nbVote<?php echo $ref; ?>" style="padding:3px;font-weight: bold;border-radius:3px;background-color:#C9E0ED;color:<?php echo $row['vote'] >= 0 ? 'green' : 'red'; ?>"><?php echo $row['vote'] >= 0 ? '+' : '-'; ?><?php echo $row['vote']; ?></span>
+                                <a href="" class="voteChallenge" style="float: right; background-image: url(/TruthOrDare/images/iLike.png);text-decoration:none;" id="V<?php echo $ref; ?>" name="up">&nbsp;</a>
+                                <a href="" class="voteChallenge" style="float: right; background-image: url(/TruthOrDare/images/iDislike.png);text-decoration:none;" id="V<?php echo $ref; ?>" name="down">&nbsp;</a>
+                            </span>
+                        <?php } ?>
+                    </div>
                 <?php endif; ?>
             </span>
         </div>
         <div style="border:2px black solid; margin-bottom: 20px; margin-left:15px; padding: 5px;">
             <table width="100px" style="margin:0;">
                 <tr>
-                    <?php if($row['type'] == "ChallengeDare" || $row['type'] == "ChallengeDare"): ?>
-                        <th rowspan="2" width="50px;"><a id="picture" class="challengePicture" title="<?php echo "Dare #" . $row['id'] . " (" . $row['category'] . "): " . $row['content'] ?>" href="userImages/challenge_original/<?php echo $row['pictureChallengeDare']; ?>"><img src="userImages/challenge_mini/<?php echo $row['pictureChallengeDareMini']; ?>" width="48px" height="48px" /></a></th>
+                    <?php if($row['type'] == "ChallengeDare"): ?>
+                        <th rowspan="2" width="50px;"><a id="picture" class="challengePicture" title="<?php echo $row['challengeTruthOrCommentDare']; ?>" href="userImages/challenge_original/<?php echo $row['pictureChallengeDare']; ?>"><img src="userImages/challenge_mini/<?php echo $row['pictureChallengeDareMini']; ?>" width="48px" height="48px" /></a></th>
                     <?php endif; ?>
                     <?php if($row['type'] !== "WallMessage" && $row['type'] !== "RankUpgrade"): ?>
                         <td>
@@ -294,7 +311,7 @@ $(document).ready(function() {
                                 <?php 
                                     switch($row['type']){
                                         case 'ChallengeTruth' :
-                                            echo "Truth #" . $row['id'] . " (" . $row['category'] . ") accomplished : " . $row['content'];
+                                            echo "Truth #" . $row['id'] . " (" . $row['category'] . ") accomplished : " . $row['challengeTruthOrCommentDare'];
                                             break;
                                         case 'ChallengeDare' :
                                             echo "Dare #" . $row['id'] . " (" . $row['category'] . ") accomplished (+2 points):";

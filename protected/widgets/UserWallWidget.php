@@ -92,7 +92,7 @@ class UserWallWidget extends CWidget
                 $wall[$i]['displayUsername'] = $row->userFrom->username;
                 $wall[$i]['pictureChallengeDareMini'] = null;
                 $wall[$i]['pictureChallengeDare'] = null;
-                $wall[$i]['answerChallengeTruth'] = null;
+                $wall[$i]['challengeTruthOrCommentDare'] = null;
                 $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($row->userFrom->scoreTruth->score);
                 $wall[$i]['rankDare'] = MyFunctions::getDareRankName($row->userFrom->scoreDare->score);
                 $i++;   
@@ -117,7 +117,7 @@ class UserWallWidget extends CWidget
         {
             $wall[$i]['type'] = $row->idTruth === null ? "ChallengeDare" : "ChallengeTruth";
             $wall[$i]['id'] = $row->idChallenge;
-            $wall[$i]['content'] = isset($row->truth) ? $row->truth->truth : $row->dare->dare;
+            $wall[$i]['content'] = isset($row->truth) ? $row->answer : $row->dare->dare;
             $wall[$i]['createDate'] = $row->createDate;
             $wall[$i]['userPicture'] = $row->userTo->profilePicture . '_mini' . $row->userTo->profilePictureExtension;
             $wall[$i]['category'] = isset($row->truth) ? $row->truth->category->category : $row->dare->category->category;
@@ -128,7 +128,7 @@ class UserWallWidget extends CWidget
             $wall[$i]['displayUsername'] = $row->userTo->username;
             $wall[$i]['pictureChallengeDareMini'] = $row->pictureName . "_mini" . $row->pictureExtension;
             $wall[$i]['pictureChallengeDare'] = $row->pictureName . "_original" . $row->pictureExtension;
-            $wall[$i]['answerChallengeTruth'] = $row->answer;
+            $wall[$i]['challengeTruthOrCommentDare'] = isset($row->truth) ? $row->truth->truth : $row->answer;
             $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($row->userTo->scoreTruth->score);
             $wall[$i]['rankDare'] = MyFunctions::getDareRankName($row->userTo->scoreDare->score);
             $i++;   
@@ -162,7 +162,7 @@ class UserWallWidget extends CWidget
             $wall[$i]['displayUsername'] = $row->user->username;
             $wall[$i]['pictureChallengeDareMini'] = null;
             $wall[$i]['pictureChallengeDare'] = null;
-            $wall[$i]['answerChallengeTruth'] = null;
+            $wall[$i]['challengeTruthOrCommentDare'] = null;
             $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($row->user->scoreTruth->score);
             $wall[$i]['rankDare'] = MyFunctions::getDareRankName($row->user->scoreDare->score);
             $i++;   
@@ -196,7 +196,7 @@ class UserWallWidget extends CWidget
             $wall[$i]['displayUsername'] = $row->user->username;
             $wall[$i]['pictureChallengeDareMini'] = null;
             $wall[$i]['pictureChallengeDare'] = null;
-            $wall[$i]['answerChallengeTruth'] = null;
+            $wall[$i]['challengeTruthOrCommentDare'] = null;
             $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($row->user->scoreTruth->score);
             $wall[$i]['rankDare'] = MyFunctions::getDareRankName($row->user->scoreDare->score);
             $i++;   
@@ -228,7 +228,7 @@ class UserWallWidget extends CWidget
             $wall[$i]['displayUsername'] = $row->user->username;
             $wall[$i]['pictureChallengeDareMini'] = null;
             $wall[$i]['pictureChallengeDare'] = null;
-            $wall[$i]['answerChallengeTruth'] = null;
+            $wall[$i]['challengeTruth'] = null;
             $wall[$i]['rankTruth'] = MyFunctions::getTruthRankName($row->user->scoreTruth->score);
             $wall[$i]['rankDare'] = MyFunctions::getDareRankName($row->user->scoreDare->score);
             $i++;   

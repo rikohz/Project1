@@ -10,7 +10,11 @@ if (in_array($_FILES["userfile"]["type"],$allowedExtensions))
     if(($_FILES["userfile"]["size"] <= (1024 * 1024 * 2)))
         if ($_FILES["userfile"]["error"] == 0)
             if (move_uploaded_file ($_FILES['userfile']['tmp_name'],$uploadfile))
-                echo $rndId . $uploadFromServerView;
+            {
+                Yii::import('application.extensions.image.Image');
+                $image = Yii::app()->image->load($uploadfile);
+                echo $rndId . "|" . $uploadFromServerView . "|" . $image->__get('width') . "|" . $image->__get('height');
+            }
             else 
                 echo "4";
         else

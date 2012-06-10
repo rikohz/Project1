@@ -8,16 +8,26 @@ class DareController extends MyController
 //      <!--****************************-->
 
 	public function actionDare()
-	{                
-            $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
-      
-            //Filter and order criterias
-            if(isset($_GET['idCategory']))
-                Yii::app()->session['idCategory'] = $_GET['idCategory']; 
-            if(isset($_GET['order']))
-                Yii::app()->session['order'] = $_GET['order']; 
+	{       
+            $model = new SearchDareForm;
             
-            $this->render('dare',array('categories'=>$categories,'order'=>Yii::app()->session['order'],'idCategory'=>Yii::app()->session['idCategory']));
+            //If we selected some Search Criteria
+            if(isset($_POST['SearchDareForm'])) 
+            { 
+                if(isset($_POST['SearchDareForm']['idDare']) && $_POST['SearchDareForm']['idDare'] !== '')
+                    $model->idDare = $_POST['SearchDareForm']['idDare'];
+                else
+                    $model->attributes = $_POST['SearchDareForm'];
+            }                
+            
+            //If we are using AJAX Update Panel
+            if(Yii::app()->request->isAjaxRequest)
+                $this->renderPartial('_searchDareResult',array('model'=>$model));
+            else
+            {
+                $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+                $this->render('dare',array('model'=>$model,'categories'=>$categories));
+            }
 	}
          
         

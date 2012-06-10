@@ -1,14 +1,10 @@
 <script type="text/javascript">
-//Progress bar for Truth
 $(document).ready(function() {
+    //Progress bar for Truth and Dare
     $("#progressBarTruth").progressbar({ value: <?php echo MyFunctions::getValueProgressBar($user->scoreTruth->score); ?> });
-  });
-  
-//Progress bar for Dare
-$(document).ready(function() {
     $("#progressBarDare").progressbar({ value: <?php echo MyFunctions::getValueProgressBar($user->scoreDare->score); ?> });
   });
-  
+ 
 //Send friend request
 function sendFriendRequest()
 {
@@ -51,7 +47,7 @@ $(function() {
 ?>
 
   
-<div style="width:150px; display:inline-block;border:1px black solid; vertical-align: top;">
+<div style="width:150px; display:inline-block; vertical-align: top;">
     
     <!--*****************-->
     <!-- Profile Picture -->
@@ -83,13 +79,13 @@ $(function() {
 </div>
 
 
-<div style="border:1px black solid; width:750px; display:inline-block;">
-    <div style="height:150px; border:1px black solid;">
+<div style="width:750px; display:inline-block;">
+    <div style="height:150px;background-color:#EEF">
         
         <!--********************************-->
         <!-- Display User main informations -->
         <!--********************************-->
-        <div style="height:150px; width:250px; border:1px black solid; float:left;">
+        <div style="height:150px; width:250px; float:left;">
             <div style="font-size:2em; font-weight:bold;"><?php echo $user->username; ?></div>
             <div>
                 <?php 
@@ -108,62 +104,60 @@ $(function() {
         <!--****************************-->
         <!-- Display Scores of the User -->
         <!--****************************-->
-        <div style="height:150px; width:494px; border:1px black solid; float:right;">
-            <div style="float:right; width:450px; height:73px; border:1px black solid;">
+        <div style="height:150px; width:494px; float:right;">
+            <div style="float:right; width:450px; height:73px;">
                 <!-- Display Score Truth -->
-                <div style="float:right; width:120px; height:71px; border:1px black solid; font-weight:bold; text-align:center;">
+                <div style="float:right; width:120px; height:71px font-weight:bold; text-align:center;">
                     <p style="line-height:71px; vertical-align:middle;">Total: <?php echo $score['scoreTruthVoteIdeas']['total'] + $score['scoreTruthChallenges']['total'] + $score['scoreTruthVoteChallenges']['total']; ?>pts</p>
                 </div>
                 <!-- Display Score Truth Week -->
-                <div style="float:right; width:120px; height:71px; border:1px black solid;">
+                <div style="float:right; width:120px; height:71px;">
                     <div style="margin: 10px 0 0 8px;">
                         <u>Week</u><br />
                         Idea: <?php echo $score['scoreTruthVoteIdeas']['week']; ?>pts<br />
                         Challenge: <?php echo $score['scoreTruthChallenges']['week'] + $score['scoreTruthVoteChallenges']['week']; ?>pts
                     </div>
                 </div>
-                <div style="float:right; width:120px; height:71px; border:1px black solid; font-size:4.5em; vertical-align:middle; text-align:center; font-weight:bold;">T</div>
+                <div style="float:right; width:120px; height:71px; font-size:4.5em; vertical-align:middle; text-align:center; font-weight:bold;">T</div>
             </div>
-            <div style="float:right; width:450px; height:73px; border:1px black solid;">
+            <div style="float:right; width:450px; height:73px;">
                 <!-- Display Score Dare -->
-                <div style="float:right; width:120px; height:71px; border:1px black solid; font-weight:bold; text-align:center;">
+                <div style="float:right; width:120px; height:71px; font-weight:bold; text-align:center;">
                     <p style="line-height:71px; vertical-align:middle;">Total: <?php echo $score['scoreDareVoteIdeas']['total'] + $score['scoreDareChallenges']['total'] + $score['scoreDareVoteChallenges']['total']; ?>pts</p>
                 </div>
                 <!-- Display Score Dare Week -->
-                <div style="float:right; width:120px; height:71px; border:1px black solid;">
+                <div style="float:right; width:120px; height:71px;">
                     <div style="margin: 10px 0 0 8px;">
                         <u>Week</u><br />
                         Idea: <?php echo $score['scoreDareVoteIdeas']['week']; ?>pts<br />
                         Challenge: <?php echo $score['scoreDareChallenges']['week'] + $score['scoreDareVoteChallenges']['week']; ?>pts
                     </div>
                 </div>
-                <div style="float:right; width:120px; height:71px; border:1px black solid; font-size:4.5em; vertical-align:middle; text-align:center; font-weight:bold;">D</div>
+                <div style="float:right; width:120px; height:71px; font-size:4.5em; vertical-align:middle; text-align:center; font-weight:bold;">D</div>
             </div>
         </div>
     </div>
-
     
     <!--******-->
     <!-- Wall -->
     <!--******-->
-    <?php $this->widget('UserWallWidget',
-            array(
-                'idCurrentUser'=>Yii::app()->user->isGuest ? null : Yii::app()->user->getId(),
-                'idWallOwner'=>$user->idUser,
-                'filterLevel'=>Yii::app()->user->isGuest ? 1 : Yii::app()->user->getLevel(),
-                'withVotes'=>1,
-                'withFavourites'=>1,
-                'withComments'=>1,
-                'withSendChallenge'=>1,
-                'withFormMessage'=>Friend::areFriendsOrFriendRequest($user->idUser,Yii::app()->user->getId(),1),
-                'withWallMessages'=>Friend::areFriendsOrFriendRequest($user->idUser,Yii::app()->user->getId(),1)
-                )); ?>
-            
-
-        <p>See yiinfinite-scroll</p>
+    <div style="background-color:#FEE;">
+        <?php $this->widget('UserWallWidget',
+                array(
+                    'idCurrentUser'=>Yii::app()->user->isGuest ? null : Yii::app()->user->getId(),
+                    'idWallOwner'=>$user->idUser,
+                    'filterLevel'=>Yii::app()->user->isGuest ? 1 : Yii::app()->user->getLevel(),
+                    'withVotes'=>1,
+                    'withFavourites'=>1,
+                    'withComments'=>1,
+                    'withSendChallenge'=>1,
+                    'withFormMessage'=>Friend::areFriendsOrFriendRequest($user->idUser,Yii::app()->user->getId(),1),
+                    'withWallMessages'=>Friend::areFriendsOrFriendRequest($user->idUser,Yii::app()->user->getId(),1)
+                    )); ?>
     </div>
 </div>
 
+<p>(See yiinfinite-scroll)</p>
 
 <!--***************************-->
 <!-- Dialog for Friend Request -->

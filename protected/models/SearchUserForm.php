@@ -13,8 +13,9 @@ class SearchUserForm extends CFormModel
 	public $idProvince;
 	public $idCity;
 	public $idDistrict;
-        public $gender;
-        public $level;
+    public $gender;
+    public $level;
+    public $order;
 
 	/**
 	 * Declares the validation rules.
@@ -22,7 +23,7 @@ class SearchUserForm extends CFormModel
 	public function rules()
 	{
 		return array(
-                    array('username,ageMin,ageMax,idProvince,idCity,idDistrict,gender,level','safe'),
+                    array('username,ageMin,ageMax,idProvince,idCity,idDistrict,gender,level,order','safe'),
 		);
 	}
 
@@ -34,13 +35,12 @@ class SearchUserForm extends CFormModel
 	public function attributeLabels()
 	{
 		return array(
+			'gender'=>'Gender',
 			'username'=>'Username',
 			'ageMin'=>'Age Min.',
 			'ageMax'=>'Age Max.',
 			'level'=>'Level',
-			'idProvince'=>'Province',
-			'idCity'=>'City',
-			'idDistrict'=>'District',
+			'location'=>'Location',
 		);
 	}
         
@@ -51,9 +51,15 @@ class SearchUserForm extends CFormModel
         public function getCriteria()
         {
             $criteria = new CDbCriteria;
-            $criteria->with = array('scoreTruth','scoreDare','level');
+            $criteria->with = array('scoreTruth','scoreDare','level','province','city','district');
             $criteria->params = array();
                     
+            if(isset($this->order) && $this->order !== ''){
+                $criteria->order = $this->order;
+            }   
+            else
+                $criteria->order = "(scoreTruth.score + scoreDare.score) DESC";
+                
             if(isset($this->username) && $this->username !== ''){
                 $criteria->addCondition(' t.username = :username ');
                 $criteria->params[":username"] = $this->username;
@@ -79,8 +85,9 @@ class SearchUserForm extends CFormModel
                 $criteria->params[":maxBirthDate"] = date('Y-m-d',strtotime(date("Y-m-d") . " -$this->ageMin year"));
             }  
             if(isset($this->ageMax) && $this->ageMax !== ''){
+                $ageMax = $this->ageMax + 1;
                 $criteria->addCondition(' t.birthDate >= :minBirthDate ');
-                $criteria->params[":minBirthDate"] = date('Y-m-d',strtotime(date("Y-m-d") . " -$this->ageMax year"));
+                $criteria->params[":minBirthDate"] = date('Y-m-d',strtotime(date("Y-m-d") . " -$ageMax year"));
             }  
             if(isset($this->level) && $this->level !== ''){
                 $criteria->addCondition(' level.level = :level ');

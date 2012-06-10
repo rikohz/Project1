@@ -9,7 +9,7 @@
 ?>
 
 <div>
-    <a href="index.php?r=user/myInormations">Update my informations</a>
+    <a href="index.php?r=user/myInformations">Update my informations</a>
     <br />
     <a href="index.php?r=user/myPassword">Change my Password</a>
     <br />

@@ -42,6 +42,18 @@ function getExtension(filename){
     var parts = filename.split(".");        
     return (parts[(parts.length-1)]);    
 }   
+function updateThumb(name,path,width,height){    
+    height = width > 150 ? height / (width / 150) : height;
+    width = width > 150 ? width / (width / 150) : width;
+    $("div.previewChallengePicture").css("background", "url(" + path + ") no-repeat");
+    $('div.previewChallengePicture').css("width",width);
+    $('div.previewChallengePicture').css("height",height); 
+    $('div.previewChallengePicture').css("background-size","100% 100%"); 
+    $('#validateImage').val(1); 
+    $("#pictureName").val(name);
+    $("#pictureExtension").val('.' + getExtension(path));
+    $('#errorUpload').html("&nbsp;");
+}  
 
 $(function() {
     
@@ -67,15 +79,15 @@ $(function() {
     
     $( "#dialog-form-accept-challengeDare" ).dialog({
             autoOpen: false,
-            height: 540,
-            width: 360,
+            height: 550,
+            width: 380,
             modal: true,
             buttons: {
                     "Validate": function() {
                         if($('#validateImage').val() == 1)
                         {
-                            var tempName = $('#tempName').val();
-                            var extension = $('#extension').val();
+                            var pictureName = $('#pictureName').val();
+                            var pictureExtension = $('#pictureExtension').val();
                             $.ajax({ 
                               url: "index.php?r=user/acceptChallenge", 
                               type: "POST", 
@@ -83,19 +95,20 @@ $(function() {
                                   'type' : 'Dare',
                                   'answer' : $( "#ChallengeDare_answer" ).val(),
                                   'idChallenge' : idChallenge,
-                                  'pictureName' : tempName,
-                                  'pictureExtension' : extension
+                                  'pictureName' : pictureName,
+                                  'pictureExtension' : pictureExtension
                               }, 
                               success: function(result){ 
                                   if(result == "SUCCESS")
-                                    parent.html("<img src='userImages/challenge_mini/" + tempName + "_mini" + extension + "' width='48px' height='48px' />"); 
+                                    parent.html("<img src='userImages/challenge_mini/" + pictureName + "_mini" + pictureExtension + "' width='48px' height='48px' />"); 
                                 } 
                             });  
                             $( this ).dialog( "close" );
-                            $('#tempName').val("");
-                            $('#extension').val("");
+                            $('#pictureName').val("");
+                            $('#pictureExtension').val("");
                             $("#ChallengeDare_answer").val("");
-                            $("#thumb").attr("src",""); 
+                            $("div.previewChallengePicture").css("background", "none");
+                            $('#validateImage').val(0);  
                         } else{
                             document.getElementById('errorUpload').innerHTML = "You have to select a suitable Picture!";
                         }
@@ -219,45 +232,63 @@ $(function() {
     //<!--********************************************-->
     //<!-- Preview image for Upload Challenge Picture -->
     //<!--********************************************-->
-    var thumb = $('img#thumb');
-    new AjaxUpload('Challenge_pictureUploader', {
-            action: '/TruthOrDare/script/uploadPicture.php',
-            name: 'userfile',
-            onSubmit: function(file, extension) {
-                    $('div.preview').addClass('loading');
-            },
-            onComplete: function(file, response) {   
-                    if(jQuery.inArray(response, ["1","2","3","4"]) !== -1){
-                        $('div.preview').removeClass('loading');
-                        thumb.unbind();
-                        switch (response) 
-                        { 
-                        case "1": 
-                            document.getElementById('errorUpload').innerHTML = "Wrong format of file - Only JPG/PNG/GIF are allowed";
-                            break; 
-                        case "2": 
-                            document.getElementById('errorUpload').innerHTML = "File too heavy - 2MB maximum";
-                            break; 
-                        defaut: 
-                            document.getElementById('errorUpload').innerHTML = "Problem during file transfer";
-                            break; 
+//    var thumb = $('img#thumb');
+//    new AjaxUpload('Challenge_pictureUploader', {
+//            action: 'index.php?r=site/uploadPicture',
+//            name: 'userfile',
+//            onSubmit: function(file, extension) {
+//                    $('div.preview').addClass('loading');
+//            },
+//            onComplete: function(file, response) {   
+//                    if(jQuery.inArray(response, ["1","2","3","4"]) !== -1){
+//                        $('div.preview').removeClass('loading');
+//                        thumb.unbind();
+//                        switch (response) 
+//                        { 
+//                        case "1": 
+//                            document.getElementById('errorUpload').innerHTML = "Wrong format of file - Only JPG/PNG/GIF are allowed";
+//                            break; 
+//                        case "2": 
+//                            document.getElementById('errorUpload').innerHTML = "File too heavy - 2MB maximum";
+//                            break; 
+//                        defaut: 
+//                            document.getElementById('errorUpload').innerHTML = "Problem during file transfer";
+//                            break; 
+//                        }
+//                        thumb.attr('src', ''); 
+//                        $('#validateImage').val(0);      
+//                    } else {
+//                        thumb.load(function(){
+//                            $('div.preview').removeClass('loading');
+//                            thumb.unbind();
+//                        });
+//                        document.getElementById('errorUpload').innerHTML = "&nbsp;";
+//                        thumb.attr('src', response.substring(13,response.length));
+//                        $('#validateImage').val(1); 
+//                        $('#tempName').val(response.substring(0,13)); 
+//                        $('#extension').val('.' + getExtension(response)); 
+//                    }
+//            }
+//    });  
+    
+	new AjaxUpload('Challenge_pictureUploader', {
+		action: 'index.php?r=site/uploadPicture',
+		name: 'userfile',
+		onSubmit: function(file, extension) {  
+			$("div.previewChallengePicture").css("background", "url(/TruthOrDare/images/loading.gif) center no-repeat");
+		},
+		onComplete: function(file, response) {   
+                        var pictureArray = response.split('|');
+                        if(pictureArray[0] == 0){
+                            updateThumb(pictureArray[1],pictureArray[2],pictureArray[3],pictureArray[4]);
+                        } else {
+                            $("div.previewChallengePicture").css("background", "none");
+                            $('#validateImage').val(0);  
+                            $('#errorUpload').html(pictureArray[1]);
                         }
-                        thumb.attr('src', ''); 
-                        $('#validateImage').val(0);      
-                    } else {
-                        thumb.load(function(){
-                            $('div.preview').removeClass('loading');
-                            thumb.unbind();
-                        });
-                        document.getElementById('errorUpload').innerHTML = "&nbsp;";
-                        thumb.attr('src', response.substring(13,response.length));
-                        $('#validateImage').val(1); 
-                        $('#tempName').val(response.substring(0,13)); 
-                        $('#extension').val('.' + getExtension(response)); 
-                    }
-            }
-    });  
-});
+		}
+	});
+}); 
 </script>
 <style type="text/css">  
     div.preview {margin-left: auto; margin-right: auto; height: 150px; width: 150px;  border: 2px dotted #CCCCCC;}
@@ -339,7 +370,7 @@ $this->breadcrumbs=array(
 <!--**************************************-->
 <!-- Dialog box to accept Challenges Dare -->
 <!--**************************************-->
-<div id="dialog-form-accept-challengeDare" style="font-size:0.8em;" title="Accept Challenge">
+<div id="dialog-form-accept-challengeDare" style="font-size:0.8em;display:none;" title="Accept Challenge">
     <form enctype="multipart/form-data" id="acceptChallenge-formDare" method="post">
         <p>Picture:</p>
 	<input id="Challenge_pictureUploader" type="file" />
@@ -348,12 +379,15 @@ $this->breadcrumbs=array(
         <br /><br />
         <p>Comment:</p>
         <textarea rows="2" cols="60" id="ChallengeDare_answer"></textarea> 
-        <input type="hidden" id="tempName" />
-        <input type="hidden" id="extension" />
+        
+        <input type="hidden" id="pictureName" />
+        <input type="hidden" id="pictureExtension" />
         <input type="hidden" id="validateImage" value="0" />
-        <br /><br />
+        <br />
+        <br />
         <p align="center"><u>Preview</u></p>
-        <div class="preview"><img id="thumb" width="150px" height="150px" src="" /></div>     
+        <div class="previewChallengePicture" style="background: url();">&nbsp;</div>        
+        
     </form>
 </div>
            
@@ -361,7 +395,7 @@ $this->breadcrumbs=array(
 <!--***************************************-->
 <!-- Dialog box to accept Challenges Truth -->
 <!--***************************************-->
-<div id="dialog-form-accept-challengeTruth" style="font-size:0.8em;" title="Accept Challenge">
+<div id="dialog-form-accept-challengeTruth" style="font-size:0.8em;display:none;" title="Accept Challenge">
     <form enctype="multipart/form-data" id="acceptChallenge-formTruth" method="post">
         <p>Answer:</p>
         <textarea rows="4" cols="70" name="truthAnswer" id="ChallengeTruth_answer"></textarea>
@@ -372,7 +406,7 @@ $this->breadcrumbs=array(
 <!--*************************************-->
 <!-- Dialog box to see the Truth or Dare -->
 <!--*************************************-->
-<div id="dialog-form-see-truthOrDare" title="See answer">
+<div id="dialog-form-see-truthOrDare" title="See answer" style="display:none;">
     <div id="truthOrDare">&nbsp;</div>
 </div>
 
@@ -380,7 +414,7 @@ $this->breadcrumbs=array(
 <!--******************************************-->
 <!-- Dialog box to see answer Challenge Truth -->
 <!--******************************************-->
-<div id="dialog-form-see-answerTruth" title="See answer">
+<div id="dialog-form-see-answerTruth" title="See answer" style="display:none;">
     <div id="answerTruth">&nbsp;</div>
 </div>
 
@@ -388,6 +422,6 @@ $this->breadcrumbs=array(
 <!--********************************-->
 <!-- Dialog box to delete Challenge -->
 <!--********************************-->
-<div id="dialog-confirm-delete" title="Delete Challenge">
+<div id="dialog-confirm-delete" title="Delete Challenge" style="display:none;">
     <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Are you sure to delete this Challenge (you will lose all the points related ot it)?</p>
 </div>

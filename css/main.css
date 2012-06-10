@@ -239,35 +239,24 @@ div.search-form
 
 .boxTruthOrDare
 {
-    height:50px; 
-    width:100%;
-    border:1px dashed #29ABE2;
+    width: 100%;
+    border: 2px #29ABE2 dotted;
     margin-bottom: 30px;
  }
 
- a.voteTruth, a.voteDare
+ a.voteTruth, a.voteDare, a.voteTruthOrDare, a.voteChallenge, a.voteChallengeDare, a.voteChallengeTruth
 {
-     height: 26px;
-     width: 28px;
-     display: inline-block;
-     margin-left: 10px;
-}
- 
-a.voteTruthOrDare, a.voteChallenge
-{
-     height: 26px;
-     width: 28px;
-     display: inline-block;
-     float:right;
-}
- 
-div.addFavouriteTruth, div.addFavouriteDare
-{
-     background-image: url(/TruthOrDare/images/favourite.png);
      height: 24px;
      width: 24px;
      display: inline-block;
-     margin-left: 10px;
+}
+ 
+div.addFavouriteTruth, div.addFavouriteDare, div.addFavouriteDareChalenge
+{
+     background-image: url('/TruthOrDare/images/favourite.png');
+     height: 24px;
+     width: 24px;
+     display: inline-block;
 }
  
 div.addFavourite
@@ -276,7 +265,6 @@ div.addFavourite
      height: 24px;
      width: 24px;
      display: inline-block;
-     margin-right: 10px;
      float:right;
 }
 
@@ -289,4 +277,13 @@ button.acceptChallenge
 {
     width:100px;
     height:40px;
+}
+
+.previewProfilePicture, .previewChallengePicture 
+{
+    margin-left: auto; 
+    margin-right: auto; 
+    width:150px; 
+    height: 150px; 
+    border: 2px dotted #CCCCCC;
 }

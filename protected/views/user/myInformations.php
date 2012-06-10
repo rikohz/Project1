@@ -9,9 +9,9 @@
   );
 ?>
 
-<?php if(Yii::app()->user->hasFlash('updateUserInformations')): ?>
+<?php if(Yii::app()->user->hasFlash('myInformations')): ?>
     <div class="flash-success">
-            <?php echo Yii::app()->user->getFlash('updateUserInformations'); ?>
+            <?php echo Yii::app()->user->getFlash('myInformations'); ?>
     </div>
 <?php else: ?>
 
@@ -40,7 +40,25 @@
 		<?php echo $form->textField($model,'conf_email'); ?>
 		<?php echo $form->error($model,'conf_email'); ?>
 	</div>
+
+	<div class="row">
+		<?php echo $form->labelEx($model,'birthDate'); ?>
+        <?php 
+        Yii::import('application.extensions.CJuiDateTimePicker.CJuiDateTimePicker');
+            $this->widget('CJuiDateTimePicker',array(
+                'model'=>$model,
+                'attribute'=>'birthDate', 
+                'mode'=>'date',
+                'options'=>array(
+                    'changeYear'=>true, 
+                    'dateFormat'=>"yy-mm-dd",
+                    'yearRange'=>"-100:+0"
+                ),
+            ));
+        ?>
+	</div>
         
+		<?php echo $form->labelEx($model,'Location'); ?>
         <?php
             echo $form->dropDownList($model,'idProvince', $provinces,
                 array(
@@ -75,20 +93,6 @@
                         'options'=>array($model->idDistrict=>array("selected"=>"selected"))
                     ));
         ?>
-
-        
-        <?php if(CCaptcha::checkRequirements()): ?>
-	<div class="row">
-		<?php echo $form->labelEx($model,'verifyCode'); ?>
-		<div>
-		<?php $this->widget('CCaptcha'); ?>
-		<?php echo $form->textField($model,'verifyCode'); ?>
-		</div>
-		<div class="hint">Please enter the letters as they are shown in the image above.
-		<br/>Letters are not case-sensitive.</div>
-		<?php echo $form->error($model,'verifyCode'); ?>
-	</div>
-	<?php endif; ?>
 
 	<div class="row buttons">
 		<?php echo CHtml::submitButton('Submit'); ?>

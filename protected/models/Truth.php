@@ -29,6 +29,7 @@ class Truth extends CActiveRecord
         //Need to fetch results
         public $nbFavourite;
         public $nbComment;
+        public $nbChallenge;
         
 	/**
 	 * Returns the static model of the specified AR class.
@@ -74,9 +75,9 @@ class Truth extends CActiveRecord
 			'category' => array(self::BELONGS_TO, 'Category', 'idCategory','alias'=>'categoryTruth'),
 			'user' => array(self::BELONGS_TO, 'User', 'idUser'),
 			'votingDetail' => array(self::HAS_MANY, 'VotingDetail', 'idTruth'),
-                        'comments'=> array(self::HAS_MANY,'Comment','idTruth'),
+            'comments'=> array(self::HAS_MANY,'Comment','idTruth'),
 			'userListContents' => array(self::HAS_MANY, 'Userlistcontent', 'idTruth'),
-                        'nbComment'=> array(self::HAS_ONE,'Comment','idTruth','select'=>'count(idComment) AS nbComments','group'=>'t.idTruth')
+            'nbComment'=> array(self::HAS_ONE,'Comment','idTruth','select'=>'count(idComment) AS nbComments','group'=>'t.idTruth')
 		);
 	}
 
@@ -131,6 +132,7 @@ class Truth extends CActiveRecord
             $criteria = new CDbCriteria;
             $criteria->with = array('user','category','user.scoreTruth','user.scoreDare');
             $criteria->params = array();
+            $criteria->group = "t.idTruth";
             
             //If we want to get the user favourites Truth and Dares
             $conditionUserFavourite = $userFavourite !== 1 || Yii::app()->user->isGuest ? "" :  " AND UL.idUser = " . Yii::app()->user->getId();
@@ -143,34 +145,37 @@ class Truth extends CActiveRecord
                   GROUP BY ULC.idTruth) AS nbFavourite,
                 (SELECT count(idComment) AS nbComment
                   FROM comment
-                  WHERE idTruth = t.idTruth) AS nbComment
+                  WHERE idTruth = t.idTruth) AS nbComment,
+                (SELECT count(idChallenge) AS nbChallenge
+                  FROM challenge
+                  WHERE idTruth = t.idTruth AND status = 1) AS nbChallenge
                 ";
                         
-            if(isset($this->idUser)){
+            if(isset($this->idUser) && $this->idUser !== ''){
                 $criteria->addCondition(' t.idUser = :idUser ');
                 $criteria->params[":idUser"] = $this->idUser;
             }         
-            if(isset($this->idTruth)){
+            if(isset($this->idTruth) && $this->idTruth !== ''){
                 $criteria->addCondition(' t.idTruth = :idTruth ');
                 $criteria->params[":idTruth"] = $this->idTruth;
             }
-            if(isset($this->idCategory)){
+            if(isset($this->idCategory) && $this->idCategory !== ''){
                 $criteria->addCondition(' t.idCategory = :idCategory ');
                 $criteria->params[":idCategory"] = $this->idCategory;
             }
-            if(isset($this->anonymous)){
+            if(isset($this->anonymous) && $this->anonymous !== ''){
                 $criteria->addCondition(' t.anonymous = :anonymous ');
                 $criteria->params[":anonymous"] = $this->anonymous;
             }
-            if(isset($this->levelMax)){
+            if(isset($this->levelMax) && $this->levelMax !== ''){
                 $criteria->addCondition(' categoryTruth.level <= :levelMax ');
                 $criteria->params[":levelMax"] = $this->levelMax;
             }
-            if(isset($this->minDateSubmit)){
+            if(isset($this->minDateSubmit) && $this->minDateSubmit !== ''){
                 $criteria->addCondition(' t.dateSubmit >= :minDateSubmit ');
                 $criteria->params[":minDateSubmit"] = $this->minDateSubmit;
             }
-            if(isset($this->maxDateSubmit)){
+            if(isset($this->maxDateSubmit) && $this->maxDateSubmit !== ''){
                 $criteria->addCondition(' t.dateSubmit < :maxDateSubmit ');
                 $criteria->params[":maxDateSubmit"] = $this->maxDateSubmit;
             }

@@ -62,145 +62,166 @@ class UserController extends MyController
 	}
         
 	public function actionRegister()
+    {
+        $model = new User('register');
+
+        $provinces = Province::model()->findAll();
+        $provinces = CHtml::listData($provinces,'idProvince','name');
+        $cities = array();
+        $districts = array();
+
+        if(isset($_POST['User']))
         {
-            $model = new User('register');
-            
-            $provinces = Province::model()->findAll();
-            $provinces = CHtml::listData($provinces,'idProvince','name');
-            
-            if(isset($_POST['User']))
-            {
-                $model->attributes = $_POST['User'];
-                
-                if($model->createUser())
-                {               
-                    //Log in the new user
-                    $modelLoginForm = new LoginForm;
-                    $modelLoginForm->username = $model->username;
-                    $modelLoginForm->password = $model->conf_password; //because password has been md5
-                    if($modelLoginForm->login())
-                        $this->redirect(Yii::app()->user->returnUrl);   
-                }
-            }
-            $this->render('register',array('model'=>$model,'provinces'=>$provinces));
-        }
-        
-	public function actionMyProfilePicture()
-        { 
-            $model = User::model()->findByPk(Yii::app()->user->getId());
-            $model->setScenario('updateProfilePicture');
-            
-            if(isset($_POST['User']) && $_POST['validateImage'] == 1)
-            {
-                $model->verifyCode = $_POST['User']['verifyCode'];
-                if($model->updatePicture($_POST['User']['profilePicture'],$_POST['User']['profilePictureExtension']))
-                    Yii::app()->user->setFlash('updateProfilePicture','Your Profile Picture has been updated.'); 
-            }
-            $this->render('myProfilePicture',array('model'=>$model));
-        }
-        
-	public function actionMyInformations()
-        {          
-            $model = User::model()->findByPk(Yii::app()->user->getId());
-            $model->conf_email = $model->email;
-            $model->setScenario('updateUser');
-            
-            if(isset($_POST['User']))
-            {                
-                $model->attributes = $_POST['User'];
-                
-                if($model->save())
-                    Yii::app()->user->setFlash('updateUserInformations','Your informations have been updated.');        
+            $model->attributes = $_POST['User'];
+
+            if($model->createUser())
+            {               
+                //Log in the new user
+                $modelLoginForm = new LoginForm;
+                $modelLoginForm->username = $model->username;
+                $modelLoginForm->password = $model->conf_password; //because password has been md5
+                if($modelLoginForm->login())
+                    $this->redirect(Yii::app()->user->returnUrl);   
             }
             
-            //Province
-            $provinces = Province::model()->findAll();
-            $provinces = CHtml::listData($provinces,'idProvince','name');
-            
-            //City
-            $cities = array();
             if(isset($model->idProvince))
             {
                 $cities = City::model()->findAllByAttributes(array('idProvince'=>$model->idProvince));
                 $cities = CHtml::listData($cities,'idCity','name');
             }
-            
-            //District
-            $districts = array();
+
             if(isset($model->idCity))
             {
                 $districts = District::model()->findAllByAttributes(array('idCity'=>$model->idCity));
                 $districts = CHtml::listData($districts,'idDistrict','name');
             }
-        
-            $this->render('updateUser',array('model'=>$model,'provinces'=>$provinces,'cities'=>$cities,'districts'=>$districts));
         }
+        $this->render('register',array('model'=>$model,'provinces'=>$provinces,'cities'=>$cities,'districts'=>$districts));
+    }
+        
+	public function actionMyProfilePicture()
+    { 
+            $model = User::model()->findByPk(Yii::app()->user->getId());
+            $model->setScenario('updateProfilePicture');
+
+            $pathPicture = $_SERVER['DOCUMENT_ROOT']."TruthOrDare/userImages/profilePicture/" . $model->profilePicture . "_profile" . $model->profilePictureExtension;
+            $image = Yii::app()->image->load($pathPicture);
+            $infoPreview = $model->profilePicture . "|" . $pathPicture . "|" . $image->__get('width') . '|' . $image->__get('height');
+            
+            if(isset($_POST['User']) && $_POST['validateImage'] == 1)
+            {
+                if($model->updatePicture($_POST['User']['profilePicture'],$_POST['User']['profilePictureExtension']))
+                    Yii::app()->user->setFlash('updateProfilePicture','Your Profile Picture has been updated.'); 
+            }
+            $this->render('myProfilePicture',array('model'=>$model,'infoPreview'=>$infoPreview));
+        }
+        
+	public function actionMyInformations()
+    {          
+        $model = User::model()->findByPk(Yii::app()->user->getId());
+        $model->conf_email = $model->email;
+        $model->setScenario('updateUser');
+
+        if(isset($_POST['User']))
+        {                
+            $model->attributes = $_POST['User'];
+
+            if($model->save())
+                Yii::app()->user->setFlash('myInformations','Your informations have been updated.');        
+        }
+
+        //Province
+        $provinces = Province::model()->findAll();
+        $provinces = CHtml::listData($provinces,'idProvince','name');
+
+        //City
+        $cities = array();
+        if(isset($model->idProvince))
+        {
+            $cities = City::model()->findAllByAttributes(array('idProvince'=>$model->idProvince));
+            $cities = CHtml::listData($cities,'idCity','name');
+        }
+
+        //District
+        $districts = array();
+        if(isset($model->idCity))
+        {
+            $districts = District::model()->findAllByAttributes(array('idCity'=>$model->idCity));
+            $districts = CHtml::listData($districts,'idDistrict','name');
+        }
+
+        $this->render('myInformations',array('model'=>$model,'provinces'=>$provinces,'cities'=>$cities,'districts'=>$districts));
+    }
         
 	public function actionMyCoins()
-        {         
-            $model = new VerifIdentity('addCoin');
-            
-            if(isset($_POST['VerifIdentity']))
-            {            
-                $model = VerifIdentity::model()->findByPk($_POST['VerifIdentity']['serialNumber']);
-                $model->idUser = Yii::app()->user->getId(); 
-                $model->verifCode = $_POST['VerifIdentity']['verifCode']; 
-                $model->setScenario('addCoin');
-                    
-                if($model->save())
-                {
-                    $model->serialNumber = null;
-                    $model->verifCode = null;
-                }
-            }           
-            
-            $coins = VerifIdentity::model()->findAllByAttributes(array('idUser'=>Yii::app()->user->getId()));
-            $this->render('updateCoins',array('model'=>$model,'coins'=>$coins));
-        }
+    {         
+        $model = new VerifIdentity('addCoin');
+
+        if(isset($_POST['VerifIdentity']))
+        {            
+            $model = VerifIdentity::model()->findByPk($_POST['VerifIdentity']['serialNumber']);
+            $model->idUser = Yii::app()->user->getId(); 
+            $model->verifCode = $_POST['VerifIdentity']['verifCode']; 
+            $model->setScenario('addCoin');
+
+            if($model->save())
+            {
+                if($model->level > Yii::app()->user->getState('userLevel'))
+                    Yii::app()->user->setState('userLevel',$model->level);
+                $model->serialNumber = null;
+                $model->verifCode = null;
+            }
+        }           
+
+        $coins = VerifIdentity::model()->findAllByAttributes(array('idUser'=>Yii::app()->user->getId()));
+        $this->render('myCoins',array('model'=>$model,'coins'=>$coins));
+    }
         
 	public function actionMySettings()
-        {         
-            $this->render('mySettings');
-        }
+    {         
+        $this->render('mySettings');
+    }
      
 	public function actionMyPassword()
-        {      
-            $model = User::model()->findByPk(Yii::app()->user->getId());
-            $model->setScenario('changePassword');
-            
-            $oldPassword = $model->password;
-            $model->password = '';
-            
-            if(isset($_POST['User']))
-            {                
-                $model->attributes = $_POST['User'];
-                
-                if(md5($model->password) == $oldPassword)
-                {
-                    $model->password = $model->newPassword;
-                    if($model->save())
-                        Yii::app()->user->setFlash('changePassword','Your password has been changed.');        
-                }
-                else
-                    $model->addError('password','Incorrect password');                  
-            }          
-            
-            $this->render('changePassword',array('model'=>$model));
-        }
+    {      
+        $model = User::model()->findByPk(Yii::app()->user->getId());
+        $model->setScenario('changePassword');
+
+        $oldPassword = $model->password;
+        $model->password = '';
+
+        if(isset($_POST['User']))
+        {                
+            $model->attributes = $_POST['User'];
+
+            if(md5($model->password) == $oldPassword)
+            {
+                $model->password = $model->newPassword;
+                if($model->save())
+                    Yii::app()->user->setFlash('changePassword','Your password has been changed.');        
+            }
+            else
+                $model->addError('password','Incorrect password');                  
+        }          
+
+        $this->render('myPassword',array('model'=>$model));
+    }
 
 	public function actionMyTruths()
 	{                
             $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
-      
+            $model = new SearchTruthForm;
+            $model->idUser = Yii::app()->user->getId();
+                    
             //Filter and order criterias
             if(isset($_GET['idCategory']))
                 Yii::app()->session['idCategory'] = $_GET['idCategory']; 
-            $idCategory = Yii::app()->session['idCategory'];
+            $model->idCategory = Yii::app()->session['idCategory'];
             if(isset($_GET['order']))
                 Yii::app()->session['order'] = $_GET['order']; 
-            $order = Yii::app()->session['order'];
+            $model->order = Yii::app()->session['order'];
             
-            $this->render('myTruths',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory));
+            $this->render('myTruths',array('categories'=>$categories,'model'=>$model));
 	}
 
 	public function actionUserTruths()
@@ -208,16 +229,19 @@ class UserController extends MyController
             if(isset($_GET['idUser']))
             {
                 $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+                $model = new SearchTruthForm;
+                $model->idUser = $_GET['idUser'];
+                $model->anonymous = 0;
 
                 //Filter and order criterias
                 if(isset($_GET['idCategory']))
                     Yii::app()->session['idCategory'] = $_GET['idCategory']; 
-                $idCategory = Yii::app()->session['idCategory'];
+                $model->idCategory = Yii::app()->session['idCategory'];
                 if(isset($_GET['order']))
                     Yii::app()->session['order'] = $_GET['order']; 
-                $order = Yii::app()->session['order'];
+                $model->order = Yii::app()->session['order'];
 
-                $this->render('userTruths',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory,'idUser'=>$_GET['idUser']));	
+                $this->render('userTruths',array('categories'=>$categories,'model'=>$model));	
             }
             else
                 throw new CHttpException(404,'The page cannot be found.');
@@ -226,33 +250,38 @@ class UserController extends MyController
 	public function actionMyDares()
 	{                
             $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
-      
+            $model = new SearchDareForm;
+            $model->idUser = Yii::app()->user->getId();
+                    
             //Filter and order criterias
             if(isset($_GET['idCategory']))
                 Yii::app()->session['idCategory'] = $_GET['idCategory']; 
-            $idCategory = Yii::app()->session['idCategory'];
+            $model->idCategory = Yii::app()->session['idCategory'];
             if(isset($_GET['order']))
                 Yii::app()->session['order'] = $_GET['order']; 
-            $order = Yii::app()->session['order'];
+            $model->order = Yii::app()->session['order'];
             
-            $this->render('myDares',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory));
+            $this->render('myDares',array('categories'=>$categories,'model'=>$model));
 	}
 
 	public function actionUserDares()
-	{                
+	{           
             if(isset($_GET['idUser']))
             {
                 $categories = CHtml::listData(Category::model()->findAll(), 'idCategory', 'category');
+                $model = new SearchDareForm;
+                $model->idUser = $_GET['idUser'];
+                $model->anonymous = 0;
 
                 //Filter and order criterias
                 if(isset($_GET['idCategory']))
                     Yii::app()->session['idCategory'] = $_GET['idCategory']; 
-                $idCategory = Yii::app()->session['idCategory'];
+                $model->idCategory = Yii::app()->session['idCategory'];
                 if(isset($_GET['order']))
                     Yii::app()->session['order'] = $_GET['order']; 
-                $order = Yii::app()->session['order'];
+                $model->order = Yii::app()->session['order'];
 
-                $this->render('userDares',array('categories'=>$categories,'order'=>$order,'idCategory'=>$idCategory,'idUser'=>$_GET['idUser']));	
+                $this->render('userDares',array('categories'=>$categories,'model'=>$model));	
             }
             else
                 throw new CHttpException(404,'The page cannot be found.');
@@ -468,7 +497,7 @@ class UserController extends MyController
                     //Page manager
                     $count = User::model()->count($criteria); 
                     $pages = new CPagination($count);
-                    $pages->pageSize = 10;
+                    $pages->pageSize = 16;
                     $pages->applyLimit($criteria);
                     
                     $searchResult = User::model()->findAll($criteria);
@@ -480,8 +509,18 @@ class UserController extends MyController
             {  
                 $provinces = Province::model()->findAll();
                 $provinces = CHtml::listData($provinces,'idProvince','name');
+                
+                $criteria = $model->getCriteria();
+                    
+                //Page manager
+                $count = User::model()->count($criteria); 
+                $pages = new CPagination($count);
+                $pages->pageSize = 16;
+                $pages->applyLimit($criteria);
 
-                $this->render('searchUser',array('model'=>$model,'provinces'=>$provinces));
+                $searchResult = User::model()->findAll($criteria);
+
+                $this->render('searchUser',array('searchResult'=>$searchResult,'pages'=>$pages,'model'=>$model,'provinces'=>$provinces));
             }         
 	}
 
@@ -538,7 +577,11 @@ class UserController extends MyController
                     {   
                         $verifIdentity->idUser = null;
                         if($verifIdentity->save())
+                        {
+                            $user = User::model()->findByPk(Yii::app()->user->getId());
+                            Yii::app()->user->setState('userLevel',$user->getLevel());
                             return;
+                        }
                     }
                     echo "You need at least one coin!";
                     return;

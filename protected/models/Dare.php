@@ -29,6 +29,7 @@ class Dare extends CActiveRecord
         //Need to fetch results
         public $nbFavourite;
         public $nbComment;
+        public $nbChallenge;
         
 	/**
 	 * Returns the static model of the specified AR class.
@@ -143,7 +144,10 @@ class Dare extends CActiveRecord
                   GROUP BY ULC.idDare) AS nbFavourite,
                 (SELECT count(idComment) AS nbComment
                   FROM comment
-                  WHERE idDare = t.idDare) AS nbComment
+                  WHERE idDare = t.idDare) AS nbComment,
+                (SELECT count(idChallenge) AS nbChallenge
+                  FROM challenge
+                  WHERE idDare = t.idDare AND status = 1) AS nbChallenge
                 ";
 
             if(isset($this->idUser)){

@@ -9,11 +9,35 @@ class SiteController extends MyController
       
 	public function actionIndex()
 	{              
-                $generalRanking = MyFunctions::getRanking(NULL,'year');
-                $truthRanking = MyFunctions::getRanking('truth','year');
-                $dareRanking = MyFunctions::getRanking('dare','year');    
+                $generalRanking = MyFunctions::getRanking(NULL,'year',null,null,5);
+                $truthRanking = MyFunctions::getRanking('truth','year',null,null,5);
+                $dareRanking = MyFunctions::getRanking('dare','year',null,null,5);   
                 
-                $this->render('index',array('generalRanking'=>$generalRanking,'truthRanking'=>$truthRanking,'dareRanking'=>$dareRanking));
+                $searchDareForm = new SearchDareForm;
+                $searchDareForm->limit = 3;
+                $searchDareForm->order = 'dateSubmit';
+                
+                $searchTruthForm = new SearchTruthForm;
+                $searchTruthForm->limit = 3;
+                $searchTruthForm->order = 'dateSubmit';
+                
+                $searchChallengeDareForm = new SearchChallengeDareForm;
+                $searchChallengeDareForm->limit = 3;
+                $searchChallengeDareForm->order = 'finishDate';
+                
+                $searchChallengeTruthForm = new SearchChallengeTruthForm;
+                $searchChallengeTruthForm->limit = 3;
+                $searchChallengeTruthForm->order = 'finishDate';
+                
+                $this->render('index',array(
+                    'generalRanking'=>$generalRanking,
+                    'truthRanking'=>$truthRanking,
+                    'dareRanking'=>$dareRanking,'searchDareForm'=>$searchDareForm,
+                    'searchTruthForm'=>$searchTruthForm,
+                    'searchChallengeDareForm'=>$searchChallengeDareForm,
+                    'searchChallengeTruthForm'=>$searchChallengeTruthForm
+                    )
+                );
 	}
 
 	public function actionRanking()
@@ -68,7 +92,7 @@ class SiteController extends MyController
               $this->render('submitIdea',array('model'=>$model,'truthOrDare'=>$truthOrDare,'categories'=>$categories));   
 	}
           
-        public function actionComment()
+    public function actionComment()
 	{     
             if(isset($_GET['idTruth']) || isset($_GET['idDare'])) 
             {
@@ -88,11 +112,12 @@ class SiteController extends MyController
                         Yii::app()->user->setFlash('comment','Sorry, there was a problem during the saving process..! Please try again...');                                      
                 }      
 
-                $type = isset($_GET['idDare']) ? 'Dare' : 'Truth';
-                $comments = Comment::model()->with('user',"user.scoreTruth","user.scoreDare")->findAllByAttributes(array("id$type"=>$_GET["id$type"]));
-                $idTruthOrDare = $_GET["id$type"];   
+                $idType = isset($_GET['idDare']) ? 'idDare' : 'idTruth';
+                $modelTruthOrDare = isset($_GET['idDare']) ? new Dare : new Truth;
+                $modelTruthOrDare->$idType = $_GET[$idType]; 
+                $comments = Comment::model()->with('user',"user.scoreTruth","user.scoreDare")->findAllByAttributes(array($idType=>$_GET[$idType]));
 
-                $this->render('comment',array('model'=>$model,'comments'=>$comments,'idTruthOrDare'=>$idTruthOrDare,'type'=>$type));   	
+                $this->render('comment',array('model'=>$model,'comments'=>$comments,'modelTruthOrDare'=>$modelTruthOrDare,'idType'=>$idType));   	
             }
         }
              
@@ -108,6 +133,33 @@ class SiteController extends MyController
 //      <!--********************************-->
         
         
+	public function actionUploadPicture()
+	{
+        $rndId = uniqid();
+
+        $uploadFromServerView = "/TruthOrDare/userImages/temp/{$rndId}." . pathinfo($_FILES["userfile"]["name"], PATHINFO_EXTENSION);
+        $uploadfile = $_SERVER['DOCUMENT_ROOT']."TruthOrDare/userImages/temp/{$rndId}." . pathinfo($_FILES["userfile"]["name"], PATHINFO_EXTENSION);
+        $allowedExtensions = array("image/gif","image/jpeg","image/png","image/pjpeg");
+
+        // Upload fichier
+        if (in_array($_FILES["userfile"]["type"],$allowedExtensions)) 
+            if(($_FILES["userfile"]["size"] <= (1024 * 1024 * 2)))
+                if ($_FILES["userfile"]["error"] == 0)
+                    if (move_uploaded_file ($_FILES['userfile']['tmp_name'],$uploadfile))
+                    {
+                        $image = Yii::app()->image->load($uploadfile);
+                        echo "0|" . $rndId . "|" . $uploadFromServerView . "|" . $image->__get('width') . "|" . $image->__get('height') . "|";
+                    }
+                    else 
+                        echo "1|Problem during file transfer";
+                else
+                    echo "2|Problem during file transfer";
+            else
+                echo "3|File too heavy - 2MB maximum";
+        else 
+            echo "4|Wrong format of file - Only JPG/PNG/GIF are allowed";
+	}
+    
 	public function actionVote()
 	{
             if(isset($_POST['idTruth']))
@@ -120,14 +172,15 @@ class SiteController extends MyController
                 if(!VotingDetail::model()->exists("idUser = :idUser AND id$type = :id$type",array(':idUser'=>Yii::app()->user->getId(),":id$type"=>$_POST["id$type"])))
                 {
                     $model = $type::model()->findByPk($_POST["id$type"]);             
-                    echo $model->addVote(Yii::app()->user->getId(), $_POST['vote']);               
+                    $vote = $model->addVote(Yii::app()->user->getId(), $_POST['vote']);     
+                    echo $vote > 0 ? "+$vote" : $vote;          
                 }
                 else
                     echo "Already Voted!";
                 return;
             }
-            
-            return "ERROR";
+            echo "error";
+            return;
 	}
         
 	public function actionVoteChallenge()
@@ -137,7 +190,8 @@ class SiteController extends MyController
                 if(!VotingDetail::model()->exists("idUser = :idUser AND idChallenge = :idChallenge",array(':idUser'=>Yii::app()->user->getId(),":idChallenge"=>$_POST["idChallenge"])))
                 {
                     $model = Challenge::model()->findByPk($_POST["idChallenge"]);             
-                    echo $model->addVote(Yii::app()->user->getId(), $_POST['vote']);               
+                    $vote = $model->addVote(Yii::app()->user->getId(), $_POST['vote']); 
+                    echo $vote > 0 ? "+$vote" : $vote;
                 }
                 else
                     echo "Already Voted!";
@@ -147,25 +201,29 @@ class SiteController extends MyController
             return "ERROR";
 	}
         
-        public function actionAddFavourite()
+    public function actionAddFavourite()
+    {
+        if(isset($_POST['idUserList']) && (isset($_POST['idTruth']) || isset($_POST['idDare'])))
         {
-            if(isset($_POST['idUserList']) && (isset($_POST['idTruth']) || isset($_POST['idDare'])))
+            //Verify that the person that add to favourite is the owner of the list
+            $model = UserList::model()->findByPk($_POST['idUserList']);
+            if($model->idUser == Yii::app()->user->getId())
             {
-                //Verify that the person that add to favourite is the owner of the list
-                $model = UserList::model()->findByPk($_POST['idUserList']);
-                if($model->idUser == Yii::app()->user->getId())
-                {
-                    $model = new Userlistcontent;
-                    $model->idUserList = $_POST['idUserList'];
-                    if(isset($_POST['idTruth']))
-                        $model->idTruth = $_POST['idTruth'];
-                    if(isset($_POST['idDare']))
-                        $model->idDare = $_POST['idDare'];
-                    if($model->save())
-                        echo "SUCCESS";
+                $model = new Userlistcontent;
+                $model->idUserList = $_POST['idUserList'];
+                if(isset($_POST['idTruth']))
+                    $model->idTruth = $_POST['idTruth'];
+                if(isset($_POST['idDare']))
+                    $model->idDare = $_POST['idDare'];
+                if($model->save()){
+
+                    echo "SUCCESS";
+                    $ttotot = "rr";
+                    $ttotot = "rr";
                 }
-            }  
-        }
+            }
+        }  
+    }
         
 	public function actionEvents()
 	{
@@ -210,7 +268,7 @@ class SiteController extends MyController
 	{
 		return array(
 			array('allow',  // allow all users to perform 'index' and 'view' actions
-				'actions'=>array('index','contact','error','captcha','events','about','page','ranking','test'),
+				'actions'=>array('index','contact','error','captcha','events','about','page','ranking','test','uploadPicture'),
 				'users'=>array('*'),
 			),
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions

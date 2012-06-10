@@ -67,6 +67,7 @@ $this->breadcrumbs=array(
 <!--**********************-->
 <!-- Friends Request list -->
 <!--**********************-->
+<p><b><u>Friend requests:</u></b></p>
 <?php foreach($friendsRequest as $row): ?>
     <div style="display:inline-block; width:80px; height:100px;">
         <a href="index.php?r=user/userPage&idUser=<?php echo $row->userFrom->idUser; ?>">
@@ -82,10 +83,12 @@ $this->breadcrumbs=array(
 
 <br />
 <br />
+<br />
 
 <!--**************-->
 <!-- Friends list -->
 <!--**************-->
+<p><b><u>Friends:</u></b></p>
 <?php foreach($friends as $row): ?>
     <div style="display:inline-block; width:80px; height:100px;">
         <a href="index.php?r=user/userPage&idUser=<?php echo $row['idUser']; ?>">

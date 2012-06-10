@@ -14,10 +14,6 @@ class EWebUser extends CWebUser{
  
     public $loginUrl=array('/user/login');
     public $defaultReturnUrl; 
-    protected $_model;
-    protected $level;    
-    protected $scoreTruth;   
-    protected $scoreDare;            
     
     public function getReturnUrl($defaultUrl=null)        
     {                
@@ -28,50 +24,42 @@ class EWebUser extends CWebUser{
  
     function isAdmin(){
         $user = $this->loadUser();
-        if ($user)
+        if ($user !== null)
            return $user->username == 'Eric';
         return false;
     }
  
     function getLevel(){
-        if($this->level === null)   
+        if($this->hasState('userLevel') == 0)   
         {
             $user = $this->loadUser();
-            if($user)
-                $this->level = $user->getLevel();
+            if($user !== null)
+                $this->setState('userLevel',$user->getLevel());
             else
-                return false;
+                return 1;
         }
-        return $this->level;                  
+        return $this->getState('userLevel');                  
     }
  
     function getScoreTruth(){
-        if($this->scoreTruth === null)   
-        {
-            $user = $this->loadUser();
-            if($user)
-                $this->scoreTruth = $user->scoreTruth->score;
-            else
-                return false;
-        }
-        return $this->scoreTruth;  
+        $user = $this->loadUser();
+        if($user !== null)
+            return $user->scoreTruth->score;
+        else
+            return false;
     }
  
     function getScoreDare(){
-        if($this->scoreDare === null)   
-        {
-            $user = $this->loadUser();
-            if($user)
-                $this->scoreDare = $user->scoreDare->score;
-            else
-                return false;
-        }
-        return $this->scoreDare; 
+        $user = $this->loadUser();
+        if($user !== null)
+            return $user->scoreDare->score;
+        else
+            return false;
     }
  
     function getScoreVoteIdeas($type=null){
         $user = $this->loadUser();
-        if($user)
+        if($user !== null)
             return $user->getScoreVoteIdeas($type);
         else
             return false;
@@ -79,7 +67,7 @@ class EWebUser extends CWebUser{
  
     function getScoreChallenges($type=null){
         $user = $this->loadUser();
-        if($user)
+        if($user !== null)
             return $user->getScoreChallenges($type);
         else
             return false;
@@ -87,7 +75,7 @@ class EWebUser extends CWebUser{
  
     function getScoreVoteChallenges($type=null){
         $user = $this->loadUser();
-        if($user)
+        if($user !== null)
             return $user->getScoreVoteChallenges($type);
         else
             return false;
@@ -95,7 +83,7 @@ class EWebUser extends CWebUser{
  
     function email(){
         $user = $this->loadUser();
-        if ($user)
+        if ($user !== null)
            return $user->email;
         return false;
     }
@@ -103,10 +91,10 @@ class EWebUser extends CWebUser{
     // Load user model.
     protected function loadUser()
     {
-        if ( $this->_model === null ) {
-                $this->_model = User::model()->with('scoreTruth','scoreDare')->findByPk($this->id);
+        if ( $this->hasState('user') == 0 ) {
+            $this->setState('user',User::model()->with('scoreTruth','scoreDare')->findByPk($this->id));
         }
-        return $this->_model;
+        return $this->getState('user');
     }
 }
 

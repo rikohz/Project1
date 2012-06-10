@@ -5,10 +5,6 @@ class TruthList extends CWidget
     //idUser of the current User
     public $idUser;
     
-    //Int
-    //Initiate this attribute to display only one Truth
-    public $idTruth;
-    
     //Bit
     //Display the link to ass to Favourites
     public $withFavourites;
@@ -22,75 +18,68 @@ class TruthList extends CWidget
     public $withComments;
     
     //Bit
-    //Display the truth marked as Private
-    public $withoutAnonymous = 0;
-    
-    //Bit
     //Allow user to send as a Challenge
     public $withSendChallenge;
     
     //Bit
     //Display the informations about the author od the Dare
-    public $withAuthorInformations = 1;
-    
-    //String
-    //Criteria for order results
-    public $order;
+    public $withAuthorScores = 0;
     
     //Int 
     //Maximum level of Truth we can display
     public $filterLevel;
     
-    //Int - idCategory
-    //Choose category of Truth to display
-    public $idCategory;
-    
-    //Int - idUser
-    //Only display this user Truth
-    public $idUserFilter;
-    
-    //Int
-    //Total of Truths we want to display
-    public $limit;
+    //SearchTruthForm Model
+    //Model initialized with the filter criterias
+    public $model;
     
     //Int
     //Number of Truths displayed on one page
     public $itemsPerPage = 10;
     
+    //String
+    //If the Truth List is inside a Div to update with AJAX at each changement of search criteria,
+    //use this parameter with the name of the DIV (also see $formCriteria Parameter)
+    public $idDivUpdate = null;
+    
+    //String
+    //If the Truth List is inside a Div to update with AJAX at each changement of search criteria,
+    //and we use a Form to select criterias, use this parameter with the name of the FORM 
+    public $idFormCriteria = null;
+    
     public function run()
     {  
         //We check the level of the user before to allow him to see the content
-        if(isset($this->idCategory) && isset($this->filterLevel) && $this->idCategory != ''){
-            $levelCategory = Category::model()->findByPk($this->idCategory);
+        if(isset($this->model->idCategory) && isset($this->filterLevel) && $this->model->idCategory != '')
+        {
+            $levelCategory = Category::model()->findByPk($this->model->idCategory);
             if($levelCategory->level > $this->filterLevel)
                 Yii::app()->user->setFlash('forbiddenLevel','Sorry, to have access to this category you need to register a coin which belongs to this category.');
         }
         
-        $model = new Truth;
+        //If the user makes a research by username, we shouldn't display the anonymous ones
+        if(isset($this->model->username) && $this->model->username !== '')
+                $this->model->anonymous = 0;
         
-        //Filter and order
-        if(isset($this->idCategory) && $this->idCategory != 0)
-            $model->idCategory = $this->idCategory;
-        if(isset($this->idTruth))
-            $model->idTruth = $this->idTruth;
-        if(isset($this->idUserFilter))
-            $model->idUser = $this->idUserFilter;
-        if($this->withoutAnonymous === 1)
-            $model->anonymous = 0;
-        $criteria = $model->getCriteria();   
-        if(isset($this->limit))
-            $criteria->limit = $this->limit; 
-        $criteria->order = isset($this->order)? "$this->order DESC " : " t.voteUp - t.voteDown DESC ";
+        //We get the generated criterias
+        $criteria = $this->model->getCriteria();
+        
+        //We set up the number of Truth we want to display if necessary
+        if(isset($this->model->limit))
+            $criteria->limit = $this->model->limit; 
+        
+        //We choose the order of display
+        $criteria->order = isset($this->model->order) && $this->model->order !== '' ? $this->model->order . " DESC " : " t.voteUp - t.voteDown DESC ";                    
 
         //Page manager
-        $count = $model->levelFilter($this->filterLevel)->count($criteria);
+        $count = Truth::model()->levelFilter($this->filterLevel)->count($criteria);
         //Use the $this->limit in Pagination otherwise $pages->pageSize to $criteria overriding the $criteria->limit 
-        $pages = new CPagination(isset($this->limit) ? $this->limit : $count);
-        $pages->pageSize = isset($this->limit) ? $this->limit : $this->itemsPerPage;
+        $pages = new CPagination(isset($this->model->limit) ? $this->model->limit : $count);
+        $pages->pageSize = isset($this->model->limit) ? $this->model->limit : $this->itemsPerPage;
         $pages->applyLimit($criteria);
 
         //Get the datas
-        $datas = $model->levelFilter($this->filterLevel)->findAll($criteria);
+        $datas = Truth::model()->levelFilter($this->filterLevel)->findAll($criteria);
 
         //Manage favourites
         $modelUserList = new UserList;
@@ -112,7 +101,7 @@ class TruthList extends CWidget
             'userLists'=>$userLists,
             'friends'=>$friends
             )
-        );
+        ); 
     }
 }
 ?>
